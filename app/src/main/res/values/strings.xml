@@ -1,3 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">postly</string>
+
+    <!-- ── App ─────────────────────────────────────────────────────────────── -->
+    <string name="app_name">Postly</string>
+    <string name="app_logo_desc">Postly logo</string>
+
+    <!-- ── Login ────────────────────────────────────────────────────────────── -->
+    <string name="login_to_postly">Sign in to Postly</string>
+    <string name="login">Sign in</string>
+    <string name="logging_in">Signing in…</string>
+    <string name="forgot_my_password">Forgot my password</string>
+    <string name="create_new_account">Create new account</string>
+    <string name="reset_email_sent">Password reset email sent!</string>
+    <string name="reset_email_error">Error sending email</string>
+    <string name="error_login">Sign in failed</string>
+
+    <!-- ── Sign Up ───────────────────────────────────────────────────────────── -->
+    <string name="create_account">Create account</string>
+    <string name="creating_account">Please wait…</string>
+    <string name="back_to_login">Back to login</string>
+    <string name="account_created">Account created successfully!</string>
+    <string name="error_register">Registration failed</string>
+    <string name="error_save_user">Error saving data: %1$s</string>
+
+    <!-- ── Common fields ────────────────────────────────────────────────────── -->
+    <string name="username">Username</string>
+    <string name="name">Name</string>
+    <string name="email">E-mail</string>
+    <string name="email_or_username">E-mail or username</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm password</string>
+
+    <!-- ── Field validation ──────────────────────────────────────────────────── -->
+    <string name="error_field_username_empty">Enter a username</string>
+    <string name="error_field_username_short">At least 3 characters required</string>
+    <string name="error_field_name_empty">Enter your name</string>
+    <string name="error_username_not_found">User not found</string>
+    <string name="error_field_email_empty">Enter your email</string>
+    <string name="error_field_email_reset">Enter your email to reset your password</string>
+    <string name="error_field_password_empty">Enter a password</string>
+    <string name="error_field_password_short">At least 6 characters required</string>
+    <string name="error_field_password_mismatch">Passwords do not match</string>
+
+    <!-- ── Profile ───────────────────────────────────────────────────────────── -->
+    <string name="my_profile">My Profile</string>
+    <string name="change_photo">Change photo</string>
+    <string name="avatar_desc">Profile photo</string>
+    <string name="save">Save</string>
+    <string name="saving">Saving…</string>
+    <string name="profile_updated">Profile updated!</string>
+    <string name="error_save_profile">Error saving: %1$s</string>
+    <string name="change_password">Change password</string>
+    <string name="logout">Sign out</string>
+    <string name="back">Back</string>
+
+    <!-- ── Change Password ───────────────────────────────────────────────────── -->
+    <string name="change_password_title">Change password</string>
+    <string name="change_password_subtitle">Enter your current password and choose a new one with at least 6 characters.</string>
+    <string name="change_password_lock_desc">Lock icon</string>
+    <string name="current_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="new_password_section">NEW PASSWORD</string>
+    <string name="confirm_new_password">Confirm new password</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="password_changed">Password changed successfully!</string>
+    <string name="error_current_password_empty">Enter your current password</string>
+    <string name="error_new_password_short">New password must be at least 6 characters</string>
+    <string name="error_passwords_mismatch">Passwords do not match</string>
+    <string name="error_same_password">New password must differ from the current one</string>
+    <string name="error_change_password">Error changing password</string>
+    <string name="user_not_authenticated">User not authenticated</string>
+
+    <!-- ── Home / Feed ───────────────────────────────────────────────────────── -->
+    <string name="search_hint">Search by description, city or user…</string>
+    <string name="new_post">New post</string>
+    <string name="new_post_desc">Create new post</string>
+    <string name="no_posts_title">No posts yet</string>
+    <string name="no_posts_subtitle">Be the first to post! 🚀</string>
+    <string name="no_results_title">No results</string>
+    <string name="no_results_subtitle">Try a different search term</string>
+    <string name="no_posts_image_desc">No posts</string>
+
+    <!-- ── Post ──────────────────────────────────────────────────────────────── -->
+    <string name="edit_post">Edit post</string>
+    <string name="delete_post">Delete post</string>
+    <string name="delete_post_message">Are you sure you want to delete this post?</string>
+    <string name="delete">Delete</string>
+    <string name="error_delete_post">Error deleting: %1$s</string>
+    <string name="post_created">Post created!</string>
+    <string name="post_updated">Post updated!</string>
+    <string name="posting">Posting…</string>
+    <string name="post_button">Post</string>
+    <string name="new_post_dialog_title">New Post</string>
+    <string name="edit_post_dialog_title">Edit Post</string>
+    <string name="what_are_you_thinking">What\'s on your mind?</string>
+    <string name="add_image">Image</string>
+    <string name="add_location">Location</string>
+    <string name="getting_location">Getting location…</string>
+    <string name="location_denied">Location permission denied</string>
+    <string name="post_image_desc">Post image</string>
+    <string name="unknown_user">Unknown user</string>
+    <string name="loading_user">Loading…</string>
+
+    <!-- ── Comments ──────────────────────────────────────────────────────────── -->
+    <string name="comments">Comments</string>
+    <string name="comments_count">%1$d comments</string>
+    <string name="no_comments_yet">Be the first to comment ✨</string>
+    <string name="write_a_comment">Write a comment…</string>
+    <string name="send_comment">Send</string>
+    <string name="send_comment_desc">Send comment</string>
+    <string name="delete_comment">Delete comment</string>
+    <string name="delete_comment_message">Are you sure you want to delete this comment?</string>
+    <string name="comment">Comment</string>
+    <string name="close">Close</string>
+    <string name="error_comment">Error: %1$s</string>
+    <string name="error_delete_comment">Error deleting: %1$s</string>
+
 </resources>

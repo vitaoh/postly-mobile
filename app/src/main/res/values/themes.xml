@@ -1,9 +1,40 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
     <style name="Base.Theme.Postly" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Brand — igual nos dois modos -->
+        <item name="colorPrimary">#9539CB</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#F3E8FF</item>
+        <item name="colorOnPrimaryContainer">#2D0057</item>
+        <item name="colorSecondary">#7B2FBE</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorTertiary">#C084FC</item>
+        <!-- NÃO sobrescrever colorSurface/colorOnSurface aqui -->
+        <!-- O Material3.DayNight cuida disso automaticamente -->
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
     </style>
 
     <style name="Theme.Postly" parent="Base.Theme.Postly" />
+
+    <style name="Theme.Postly.Splash" parent="Theme.Postly">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:windowSplashScreenBackground">#9539CB</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/logo</item>
+        <item name="android:statusBarColor">#9539CB</item>
+        <item name="android:navigationBarColor">#9539CB</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <!-- Shapes -->
+    <style name="ShapeAppearance.Material3.Corner.Full" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearance.Material3.Medium" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
 </resources>

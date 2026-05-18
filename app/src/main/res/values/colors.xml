@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Brand (fixo em ambos os modos) -->
+    <color name="primary">#9539CB</color>
+    <color name="primary_dark">#7B2FBE</color>
+    <color name="primary_light">#C084FC</color>
+    <color name="secundary">#FFFFFFFF</color>
+
+    <!-- Semântico -->
+    <color name="error">#D32F2F</color>
+    <color name="success">#16A34A</color>
+
+    <!-- NÃO colocar surface/on_surface/outline aqui -->
+    <!-- Usar ?attr/colorSurface, ?attr/colorOnSurface nos layouts -->
 </resources>

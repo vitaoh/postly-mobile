@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fundo roxo sólido -->
+    <item>
+        <shape>
+            <solid android:color="#9539CB" />
+        </shape>
+    </item>
+
+    <!-- Logo centralizado -->
+    <item
+        android:width="160dp"
+        android:height="160dp"
+        android:gravity="center">
+        <bitmap
+            android:src="@drawable/logo"
+            android:gravity="center" />
+    </item>
+
+</layer-list>

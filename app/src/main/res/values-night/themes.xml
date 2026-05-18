@@ -1,7 +1,16 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+<resources>
+
     <style name="Base.Theme.Postly" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Roxo mais claro para fundos escuros (legível) -->
+        <item name="colorPrimary">#9539CB</item>
+        <item name="colorOnPrimary">#1A0030</item>
+        <item name="colorPrimaryContainer">#5B21B6</item>
+        <item name="colorOnPrimaryContainer">#F3E8FF</item>
+        <item name="colorSecondary">#A855F7</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorTertiary">#E9D5FF</item>
+        <!-- colorSurface, colorOnSurface → Material3 gera automaticamente (~#1C1B1F / #E6E1E5) -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
