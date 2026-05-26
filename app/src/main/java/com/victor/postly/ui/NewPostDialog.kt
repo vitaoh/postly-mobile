@@ -2,10 +2,12 @@ package com.victor.postly.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.location.Address
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -15,14 +17,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import com.victor.postly.R
 import com.victor.postly.auth.UserAuth
 import com.victor.postly.dao.PostDao
+import com.victor.postly.databinding.DialogImageSourceBinding
 import com.victor.postly.databinding.DialogNewPostBinding
 import com.victor.postly.model.Post
 import com.victor.postly.utils.Base64Converter
 import com.victor.postly.utils.LocalizacaoHelper
+import java.io.File
 
 class NewPostDialog : DialogFragment() {
 
@@ -41,20 +46,18 @@ class NewPostDialog : DialogFragment() {
     private var capturedLocationName: String? = null
 
     private lateinit var localizacaoHelper: LocalizacaoHelper
+    private var cameraImageUri: Uri? = null
 
     private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri ?: return@registerForActivityResult
-        val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ImageDecoder.decodeBitmap(
-                ImageDecoder.createSource(requireContext().contentResolver, uri)
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+        showSelectedImage(uri)
+    }
+
+    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        val uri = cameraImageUri
+        if (success && uri != null) {
+            showSelectedImage(uri)
         }
-        selectedBitmap = bitmap
-        binding.imgPost.setImageBitmap(bitmap)
-        binding.imgPost.visibility = View.VISIBLE
     }
 
     private val locationPermissionLauncher = registerForActivityResult(
@@ -102,7 +105,7 @@ class NewPostDialog : DialogFragment() {
             binding.btnPostar.text = getString(R.string.save)
         }
 
-        binding.btnSelectImage.setOnClickListener { pickImage.launch("image/*") }
+        binding.btnSelectImage.setOnClickListener { showImageSourceDialog() }
         binding.btnLocation.setOnClickListener { requestLocation() }
         binding.chipLocation.setOnCloseIconClickListener { clearLocation() }
         binding.btnPostar.setOnClickListener { savePost() }
@@ -181,6 +184,65 @@ class NewPostDialog : DialogFragment() {
         capturedLng = null
         capturedLocationName = null
         binding.chipLocation.visibility = View.GONE
+    }
+
+    // ─── Imagem ───────────────────────────────────────────────────────────────
+
+    private fun showImageSourceDialog() {
+        val sourceBinding = DialogImageSourceBinding.inflate(layoutInflater)
+        val dialog = Dialog(requireContext())
+
+        dialog.setContentView(sourceBinding.root)
+        dialog.window?.setBackgroundDrawable(
+            android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+        )
+
+        sourceBinding.cardTakePhoto.setOnClickListener {
+            dialog.dismiss()
+            openCamera()
+        }
+
+        sourceBinding.cardChooseGallery.setOnClickListener {
+            dialog.dismiss()
+            pickImage.launch("image/*")
+        }
+
+        dialog.show()
+        val width = (resources.displayMetrics.widthPixels * 0.88).toInt()
+        dialog.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
+    }
+
+    private fun openCamera() {
+        val uri = createCameraImageUri()
+        cameraImageUri = uri
+        takePicture.launch(uri)
+    }
+
+    private fun createCameraImageUri(): Uri {
+        val imagesDir = File(requireContext().cacheDir, "post_images").apply { mkdirs() }
+        val imageFile = File.createTempFile("post_", ".jpg", imagesDir)
+        return FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            imageFile
+        )
+    }
+
+    private fun showSelectedImage(uri: Uri) {
+        if (_binding == null) return
+
+        val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ImageDecoder.decodeBitmap(
+                ImageDecoder.createSource(requireContext().contentResolver, uri)
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
+        }
+
+        selectedBitmap = bitmap
+        binding.imgPost.setImageBitmap(bitmap)
+        binding.imgPost.visibility = View.VISIBLE
     }
 
     // ─── Salvar post ──────────────────────────────────────────────────────────

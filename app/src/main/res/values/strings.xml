@@ -96,6 +96,10 @@
     <string name="edit_post_dialog_title">Edit Post</string>
     <string name="what_are_you_thinking">What\'s on your mind?</string>
     <string name="add_image">Image</string>
+    <string name="choose_image_source">Choose image source</string>
+    <string name="choose_image_source_subtitle">Add a fresh photo or pick one from your gallery.</string>
+    <string name="take_photo">Take photo</string>
+    <string name="choose_from_gallery">Choose from gallery</string>
     <string name="add_location">Location</string>
     <string name="getting_location">Getting location…</string>
     <string name="location_denied">Location permission denied</string>

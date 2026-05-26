@@ -96,6 +96,10 @@
     <string name="edit_post_dialog_title">Editar Post</string>
     <string name="what_are_you_thinking">O que você está pensando?</string>
     <string name="add_image">Imagem</string>
+    <string name="choose_image_source">Escolher imagem</string>
+    <string name="choose_image_source_subtitle">Adicione uma foto nova ou escolha uma da galeria.</string>
+    <string name="take_photo">Tirar foto</string>
+    <string name="choose_from_gallery">Escolher da galeria</string>
     <string name="add_location">Localização</string>
     <string name="getting_location">Obtendo localização…</string>
     <string name="location_denied">Permissão de localização negada</string>
