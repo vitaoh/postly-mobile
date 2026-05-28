@@ -18,7 +18,8 @@ class PostAdapter(
     private val currentUid: String,
     private val onEdit: (Post) -> Unit,
     private val onDelete: (Post) -> Unit,
-    private val onComment: (Post) -> Unit
+    private val onComment: (Post) -> Unit,
+    private val onAuthorClick: (String) -> Unit = {}
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private val allPosts: MutableList<Post> = mutableListOf()
@@ -76,6 +77,7 @@ class PostAdapter(
             txtName.visibility = View.VISIBLE
             txtUsername.visibility = View.VISIBLE
             imgAvatar.visibility = View.VISIBLE
+            bindAuthorClick(holder.binding, post.userId)
 
             if (post.userId.isEmpty()) {
                 txtName.text = "Usuário desconhecido"
@@ -110,6 +112,19 @@ class PostAdapter(
             binding.imgAvatar.setImageBitmap(bitmap)
         } else {
             binding.imgAvatar.setImageResource(android.R.drawable.ic_menu_myplaces)
+        }
+    }
+
+    private fun bindAuthorClick(binding: ItemPostBinding, userId: String) {
+        val hasUser = userId.isNotBlank()
+        val listener = View.OnClickListener {
+            onAuthorClick(userId)
+        }
+
+        listOf<View>(binding.imgAvatar, binding.txtName, binding.txtUsername).forEach { view ->
+            view.isClickable = hasUser
+            view.isFocusable = hasUser
+            view.setOnClickListener(if (hasUser) listener else null)
         }
     }
 

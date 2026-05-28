@@ -16,6 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Postly">
         <activity
+            android:name=".ui.PublicProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.ProfileActivity"
             android:exported="false" />
         <provider

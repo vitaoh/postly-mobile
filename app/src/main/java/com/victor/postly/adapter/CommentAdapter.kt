@@ -15,7 +15,8 @@ import java.util.Locale
 
 class CommentAdapter(
     private val currentUid: String,
-    private val onDelete: (Comment) -> Unit
+    private val onDelete: (Comment) -> Unit,
+    private val onAuthorClick: (String) -> Unit = {}
 ) : RecyclerView.Adapter<CommentAdapter.CommentViewHolder>() {
 
     private val comments: MutableList<Comment> = mutableListOf()
@@ -38,6 +39,7 @@ class CommentAdapter(
 
         holder.binding.txtCommentText.text = comment.text
         holder.binding.txtCommentTime.text = formatTime(comment.timestamp)
+        bindAuthorClick(holder.binding, comment.userId)
 
         // Botão excluir — visível só para o autor do comentário
         val isOwner = comment.userId == currentUid
@@ -71,6 +73,20 @@ class CommentAdapter(
         } else {
             binding.imgCommentAvatar.setImageResource(android.R.drawable.ic_menu_myplaces)
         }
+    }
+
+    private fun bindAuthorClick(binding: ItemCommentBinding, userId: String) {
+        val hasUser = userId.isNotBlank()
+        val listener = View.OnClickListener {
+            onAuthorClick(userId)
+        }
+
+        listOf<View>(binding.imgCommentAvatar, binding.txtCommentName, binding.txtCommentUsername)
+            .forEach { view ->
+                view.isClickable = hasUser
+                view.isFocusable = hasUser
+                view.setOnClickListener(if (hasUser) listener else null)
+            }
     }
 
     override fun getItemCount(): Int = comments.size

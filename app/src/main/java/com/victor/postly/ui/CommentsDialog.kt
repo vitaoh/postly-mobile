@@ -1,5 +1,6 @@
 package com.victor.postly.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -29,6 +30,8 @@ class CommentsDialog : BottomSheetDialogFragment() {
     /** Callback chamado sempre que o total de comentários muda (para atualizar o card no feed) */
     var onCommentCountChanged: ((delta: Int) -> Unit)? = null
 
+    var onAuthorClick: ((userId: String) -> Unit)? = null
+
     private val auth = UserAuth()
     private val commentDao = CommentDao()
     private val userDao = UserDao()
@@ -52,7 +55,8 @@ class CommentsDialog : BottomSheetDialogFragment() {
 
         adapter = CommentAdapter(
             currentUid = currentUid,
-            onDelete = { comment -> confirmDeleteComment(comment) }
+            onDelete = { comment -> confirmDeleteComment(comment) },
+            onAuthorClick = { userId -> handleAuthorClick(userId) }
         )
 
         binding.recyclerComments.apply {
@@ -189,6 +193,19 @@ class CommentsDialog : BottomSheetDialogFragment() {
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private fun handleAuthorClick(userId: String) {
+        if (userId.isBlank()) return
+        onAuthorClick?.invoke(userId) ?: run {
+            startActivity(
+                Intent(requireContext(), PublicProfileActivity::class.java).putExtra(
+                    PublicProfileActivity.EXTRA_USER_ID,
+                    userId
+                )
+            )
+        }
+        dismiss()
+    }
 
     private fun updateHeader(count: Int) {
         binding.txtCommentCount.text = if (count == 0)

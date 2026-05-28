@@ -50,6 +50,26 @@ class PostDao {
             .addOnFailureListener { onError(it.message ?: "Erro ao excluir post") }
     }
 
+    // Busca os posts de um usuario para o perfil publico.
+    fun getPostsByUser(
+        userId: String,
+        onResult: (List<Post>) -> Unit
+    ) {
+        collection
+            .whereEqualTo("userId", userId)
+            .get()
+            .addOnSuccessListener { result ->
+                val posts = result
+                    .mapNotNull { it.toObject(Post::class.java) }
+                    .sortedByDescending { it.timestamp }
+                onResult(posts)
+            }
+            .addOnFailureListener { e ->
+                Log.e("PostDao", "Erro ao buscar posts do usuario: ${e.message}")
+                onResult(emptyList())
+            }
+    }
+
     // Primeira página — retorna o último DocumentSnapshot para usar como cursor
     fun getFirstPage(onResult: (List<Post>, DocumentSnapshot?) -> Unit) {
         collection

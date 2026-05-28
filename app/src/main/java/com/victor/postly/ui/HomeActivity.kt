@@ -44,6 +44,14 @@ class HomeActivity : AppCompatActivity() {
         loadFirstPage()
     }
 
+    private val publicProfileLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            loadFirstPage()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -81,7 +89,8 @@ class HomeActivity : AppCompatActivity() {
             currentUid = currentUid,
             onEdit = { post -> openEditDialog(post) },
             onDelete = { post -> confirmDelete(post) },
-            onComment = { post -> openCommentsDialog(post) }
+            onComment = { post -> openCommentsDialog(post) },
+            onAuthorClick = { userId -> openPublicProfile(userId) }
         )
     }
 
@@ -170,8 +179,19 @@ class HomeActivity : AppCompatActivity() {
             onCommentCountChanged = { delta ->
                 adapter.updateCommentCount(post.id, delta)
             }
+            onAuthorClick = { userId -> openPublicProfile(userId) }
         }
         dialog.show(supportFragmentManager, "comments_${post.id}")
+    }
+
+    private fun openPublicProfile(userId: String) {
+        if (userId.isBlank()) return
+        publicProfileLauncher.launch(
+            Intent(this, PublicProfileActivity::class.java).putExtra(
+                PublicProfileActivity.EXTRA_USER_ID,
+                userId
+            )
+        )
     }
 
     // ─── Edição e exclusão ────────────────────────────────────────────────────
