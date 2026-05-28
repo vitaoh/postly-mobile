@@ -127,4 +127,6 @@
     <string name="following">Following</string>
     <string name="follow">Follow</string>
 
+    <string name="edit_profile">Edit profile</string>
+
 </resources>

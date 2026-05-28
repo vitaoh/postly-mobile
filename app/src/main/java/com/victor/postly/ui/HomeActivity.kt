@@ -36,18 +36,12 @@ class HomeActivity : AppCompatActivity() {
     private var hasMorePages = true
     private var currentSearchQuery: String = ""
 
-    private val profileLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        loadAvatar()
-        adapter.clearUserCache()
-        loadFirstPage()
-    }
-
     private val publicProfileLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
+            loadAvatar()
+            adapter.clearUserCache()
             loadFirstPage()
         }
     }
@@ -234,7 +228,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         binding.imgAvatar.setOnClickListener {
-            profileLauncher.launch(Intent(this, ProfileActivity::class.java))
+            openPublicProfile(auth.getCurrentUid() ?: "")
         }
         binding.imgLogo.setOnClickListener {
             binding.edtSearch.setText("")

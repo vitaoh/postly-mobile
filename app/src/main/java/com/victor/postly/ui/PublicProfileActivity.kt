@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.victor.postly.R
 import com.victor.postly.adapter.PostAdapter
+import com.victor.postly.auth.UserAuth
 import com.victor.postly.dao.PostDao
 import com.victor.postly.dao.UserDao
 import com.victor.postly.databinding.LayoutPublicProfileBinding
@@ -28,6 +29,7 @@ class PublicProfileActivity : AppCompatActivity() {
     private lateinit var binding: LayoutPublicProfileBinding
     private lateinit var adapter: PostAdapter
 
+    private val auth = UserAuth()
     private val userDao = UserDao()
     private val postDao = PostDao()
     private val converter = Base64Converter()
@@ -39,6 +41,17 @@ class PublicProfileActivity : AppCompatActivity() {
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             setResult(RESULT_OK)
+        }
+    }
+
+    private val profileLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            setResult(RESULT_OK)
+            adapter.clearUserCache()
+            loadUser()
+            loadPosts()
         }
     }
 
@@ -90,7 +103,19 @@ class PublicProfileActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        val isOwnProfile = profileUserId == auth.getCurrentUid()
+
         binding.btnBack.setOnClickListener { finish() }
+        binding.btnSettings.visibility = if (isOwnProfile) View.VISIBLE else View.GONE
+        binding.btnSettings.setOnClickListener {
+            profileLauncher.launch(Intent(this, ProfileActivity::class.java))
+        }
+        binding.imgLogo.setOnClickListener {
+            binding.scrollView.smoothScrollTo(0, 0)
+            adapter.clearUserCache()
+            loadUser()
+            loadPosts()
+        }
         binding.btnFollow.visibility = View.GONE
         binding.txtBio.visibility = View.GONE
     }
