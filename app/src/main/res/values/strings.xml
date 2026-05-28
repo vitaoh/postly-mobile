@@ -121,4 +121,10 @@
     <string name="error_comment">Error: %1$s</string>
     <string name="error_delete_comment">Error deleting: %1$s</string>
 
+    <!-- Public profile ──────────────────────────────────────────────────────────── -->
+    <string name="posts">Posts</string>
+    <string name="followers">Followers</string>
+    <string name="following">Following</string>
+    <string name="follow">Follow</string>
+
 </resources>
