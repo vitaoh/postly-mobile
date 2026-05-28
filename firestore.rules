@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function validFollowDoc(expectedUserId) {
+      return request.resource.data.keys().hasOnly(['userId', 'createdAt'])
+        && request.resource.data.userId == expectedUserId;
+    }
+
+    match /users/{userId} {
+      allow list: if true;
+      allow get: if signedIn();
+      allow create, update, delete: if isSelf(userId);
+
+      match /followers/{followerId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.auth.uid == followerId
+          && userId != followerId
+          && validFollowDoc(followerId);
+        allow delete: if signedIn()
+          && request.auth.uid == followerId
+          && userId != followerId;
+        allow update: if false;
+      }
+
+      match /following/{targetId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.auth.uid == userId
+          && userId != targetId
+          && validFollowDoc(targetId);
+        allow delete: if signedIn()
+          && request.auth.uid == userId
+          && userId != targetId;
+        allow update: if false;
+      }
+    }
+
+    match /posts/{postId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update: if signedIn() && (
+        request.auth.uid == resource.data.userId ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount']) ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'likedBy'])
+      );
+
+      allow delete: if signedIn()
+        && request.auth.uid == resource.data.userId;
+
+      match /comments/{commentId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.userId == request.auth.uid;
+        allow delete: if signedIn()
+          && resource.data.userId == request.auth.uid;
+        allow update: if false;
+      }
+    }
+  }
+}

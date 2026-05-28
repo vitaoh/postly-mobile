@@ -46,6 +46,14 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private val postLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            loadFirstPage()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -84,7 +92,9 @@ class HomeActivity : AppCompatActivity() {
             onEdit = { post -> openEditDialog(post) },
             onDelete = { post -> confirmDelete(post) },
             onComment = { post -> openCommentsDialog(post) },
-            onAuthorClick = { userId -> openPublicProfile(userId) }
+            onAuthorClick = { userId -> openPublicProfile(userId) },
+            onPostClick = { post -> openPost(post) },
+            onLike = { post -> toggleLike(post) }
         )
     }
 
@@ -190,12 +200,36 @@ class HomeActivity : AppCompatActivity() {
 
     // ─── Edição e exclusão ────────────────────────────────────────────────────
 
+    private fun openPost(post: Post) {
+        if (post.id.isBlank()) return
+        postLauncher.launch(
+            Intent(this, PostActivity::class.java).putExtra(
+                PostActivity.EXTRA_POST_ID,
+                post.id
+            )
+        )
+    }
+
     private fun openEditDialog(post: Post) {
         val dialog = NewPostDialog().apply {
             editPost = post
             onPostSaved = { loadFirstPage() }
         }
         dialog.show(supportFragmentManager, "edit_post")
+    }
+
+    private fun toggleLike(post: Post) {
+        val uid = auth.getCurrentUid() ?: return
+        postDao.toggleLike(
+            post = post,
+            userId = uid,
+            onSuccess = { updatedPost ->
+                adapter.updatePost(updatedPost)
+            },
+            onError = { msg ->
+                android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 
     private fun confirmDelete(post: Post) {

@@ -6,6 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="12dp"
     android:layout_marginVertical="6dp"
+    android:clickable="true"
+    android:focusable="true"
     app:cardBackgroundColor="?attr/colorSurface"
     app:cardCornerRadius="20dp"
     app:cardElevation="0dp"
@@ -18,11 +20,10 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- ── Cabeçalho ── -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
+            android:gravity="top"
             android:orientation="horizontal">
 
             <com.google.android.material.imageview.ShapeableImageView
@@ -42,69 +43,93 @@
                 android:layout_weight="1"
                 android:orientation="vertical">
 
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/txtName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textStyle="bold" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:baselineAligned="true"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/txtName"
-                        android:layout_width="0dp"
+                        android:id="@+id/txtUsername"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:ellipsize="end"
+                        android:includeFontPadding="false"
+                        android:maxWidth="150dp"
                         android:maxLines="1"
-                        android:textAppearance="?attr/textAppearanceLabelLarge"
-                        android:textColor="?attr/colorOnSurface"
-                        android:textStyle="bold" />
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@color/primary" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:alpha="0.5"
+                        android:includeFontPadding="false"
+                        android:text="·"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/txtTimestamp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
-                        android:alpha="0.5"
+                        android:alpha="0.55"
+                        android:includeFontPadding="false"
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
                 </LinearLayout>
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/txtUsername"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textAppearance="?attr/textAppearanceBodySmall"
-                    android:textColor="@color/primary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btnEdit"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="@drawable/bg_btn_edit_circle"
+                    android:contentDescription="@string/edit_post"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_edit"
+                    android:tint="@color/primary"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/bg_btn_delete_circle"
+                    android:contentDescription="@string/delete_post"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_delete"
+                    android:tint="@color/error"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
-            <ImageButton
-                android:id="@+id/btnEdit"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:background="@drawable/bg_btn_edit_circle"
-                android:contentDescription="@string/edit_post"
-                android:padding="7dp"
-                android:src="@drawable/ic_edit"
-                android:visibility="gone" />
-
-            <ImageButton
-                android:id="@+id/btnDelete"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/bg_btn_delete_circle"
-                android:contentDescription="@string/delete_post"
-                android:padding="7dp"
-                android:src="@drawable/ic_delete"
-                android:visibility="gone" />
-
         </LinearLayout>
 
-        <!-- ── Texto ── -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/txtContent"
             android:layout_width="match_parent"
@@ -114,7 +139,6 @@
             android:textAppearance="?attr/textAppearanceBodyMedium"
             android:textColor="?attr/colorOnSurface" />
 
-        <!-- ── Imagem ── -->
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgPost"
             android:layout_width="match_parent"
@@ -127,7 +151,6 @@
             app:strokeColor="?attr/colorOutlineVariant"
             app:strokeWidth="0.5dp" />
 
-        <!-- ── Localização ── -->
         <com.google.android.material.chip.Chip
             android:id="@+id/chipLocation"
             android:layout_width="wrap_content"
@@ -140,7 +163,6 @@
             app:chipIconSize="14dp"
             app:chipMinHeight="28dp" />
 
-        <!-- ── Divisor ── -->
         <View
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
@@ -148,67 +170,70 @@
             android:alpha="0.35"
             android:background="?attr/colorOutlineVariant" />
 
-        <!-- ── Barra de ações ── -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="42dp"
+            android:layout_height="40dp"
             android:layout_marginTop="4dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <!--
-                Pill outlined: sem fundo, só borda roxa.
-                Contador fica dentro do pill separado por "·"
-                e só aparece quando commentCount > 0.
-            -->
             <LinearLayout
-                android:id="@+id/btnComment"
+                android:id="@+id/btnLike"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:background="@drawable/bg_comment_pill"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="10dp"
-                android:paddingEnd="12dp">
+                android:paddingEnd="18dp">
 
                 <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
+                    android:id="@+id/imgLikeIcon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@string/like"
+                    android:src="@drawable/ic_heart_outline"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/txtLikeCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="0"
+                    android:textAppearance="?attr/textAppearanceLabelMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btnComment"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingEnd="18dp">
+
+                <ImageView
+                    android:id="@+id/imgCommentIcon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:contentDescription="@string/comment"
-                    android:src="@android:drawable/ic_dialog_info"
-                    app:tint="@color/primary" />
+                    android:src="@drawable/ic_comment_outline"
+                    app:tint="?attr/colorOnSurfaceVariant" />
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:text="@string/comment"
-                    android:textAppearance="?attr/textAppearanceLabelMedium"
-                    android:textColor="@color/primary" />
-
-                <!-- Separador · visível só quando há comentários -->
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/txtCommentSeparator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="5dp"
-                    android:text="·"
-                    android:textAppearance="?attr/textAppearanceLabelMedium"
-                    android:textColor="@color/primary"
-                    android:visibility="gone" />
-
-                <!-- Contador dentro do pill -->
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/txtCommentCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="3dp"
+                    android:layout_marginStart="6dp"
+                    android:text="0"
                     android:textAppearance="?attr/textAppearanceLabelMedium"
-                    android:textColor="@color/primary"
-                    android:textStyle="bold"
-                    android:visibility="gone" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
             </LinearLayout>
 

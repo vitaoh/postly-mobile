@@ -16,6 +16,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Postly">
         <activity
+            android:name=".ui.PostActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
             android:name=".ui.PublicProfileActivity"
             android:exported="false" />
         <activity

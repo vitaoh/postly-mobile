@@ -93,11 +93,26 @@ class CommentAdapter(
 
     fun setComments(list: List<Comment>) {
         comments.clear()
-        comments.addAll(list)
+        comments.addAll(
+            list.distinctBy { comment ->
+                comment.id.ifBlank { "${comment.userId}:${comment.timestamp}:${comment.text}" }
+            }
+        )
         notifyDataSetChanged()
     }
 
     fun addComment(comment: Comment) {
+        val alreadyAdded = if (comment.id.isNotBlank()) {
+            comments.any { it.id == comment.id }
+        } else {
+            comments.any {
+                it.userId == comment.userId &&
+                    it.timestamp == comment.timestamp &&
+                    it.text == comment.text
+            }
+        }
+        if (alreadyAdded) return
+
         comments.add(comment)
         notifyItemInserted(comments.size - 1)
     }

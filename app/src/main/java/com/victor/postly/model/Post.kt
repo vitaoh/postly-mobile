@@ -9,5 +9,7 @@ data class Post(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val locationName: String? = null,
-    val commentCount: Int = 0          // incrementado/decrementado via transação no CommentDao
+    val commentCount: Int = 0,
+    val likeCount: Int = 0,
+    val likedBy: List<String> = emptyList()
 )

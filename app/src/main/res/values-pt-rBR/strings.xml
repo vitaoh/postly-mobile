@@ -109,6 +109,7 @@
 
     <!-- ── Comentários ───────────────────────────────────────────────────────── -->
     <string name="comments">Comentários</string>
+    <string name="comment_count_one">1 comentário</string>
     <string name="comments_count">%1$d comentários</string>
     <string name="no_comments_yet">Seja o primeiro a comentar ✨</string>
     <string name="write_a_comment">Escreva um comentário…</string>
@@ -117,6 +118,7 @@
     <string name="delete_comment">Excluir comentário</string>
     <string name="delete_comment_message">Tem certeza que deseja excluir este comentário?</string>
     <string name="comment">Comentar</string>
+    <string name="like">Curtir</string>
     <string name="close">Fechar</string>
     <string name="error_comment">Erro: %1$s</string>
     <string name="error_delete_comment">Erro ao excluir: %1$s</string>

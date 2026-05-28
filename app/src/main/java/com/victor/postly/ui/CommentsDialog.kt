@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,6 +39,7 @@ class CommentsDialog : BottomSheetDialogFragment() {
     private val converter = Base64Converter()
 
     private lateinit var adapter: CommentAdapter
+    private var isSendingComment = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,9 +74,13 @@ class CommentsDialog : BottomSheetDialogFragment() {
         binding.btnSendComment.setOnClickListener { sendComment() }
 
         // Permite enviar pelo teclado (imeOptions="actionSend")
-        binding.edtComment.setOnEditorActionListener { _, _, _ ->
-            sendComment()
-            true
+        binding.edtComment.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEND) {
+                sendComment()
+                true
+            } else {
+                false
+            }
         }
     }
 
@@ -112,10 +118,13 @@ class CommentsDialog : BottomSheetDialogFragment() {
     // ─── Enviar comentário ────────────────────────────────────────────────────
 
     private fun sendComment() {
+        if (isSendingComment) return
+
         val text = binding.edtComment.text.toString().trim()
         if (text.isEmpty()) return
 
         val uid = auth.getCurrentUid() ?: return
+        isSendingComment = true
         binding.btnSendComment.isEnabled = false
 
         val comment = Comment(
@@ -128,12 +137,13 @@ class CommentsDialog : BottomSheetDialogFragment() {
         commentDao.addComment(
             postId = postId,
             comment = comment,
-            onSuccess = {
+            onSuccess = { savedComment ->
+                isSendingComment = false
                 if (_binding == null) return@addComment
                 binding.btnSendComment.isEnabled = true
                 binding.edtComment.setText("")
 
-                adapter.addComment(comment)
+                adapter.addComment(savedComment)
                 binding.recyclerComments.scrollToPosition(adapter.itemCount - 1)
                 binding.txtNoComments.visibility = View.GONE
                 binding.recyclerComments.visibility = View.VISIBLE
@@ -142,6 +152,7 @@ class CommentsDialog : BottomSheetDialogFragment() {
                 onCommentCountChanged?.invoke(+1)
             },
             onError = { msg ->
+                isSendingComment = false
                 if (_binding == null) return@addComment
                 binding.btnSendComment.isEnabled = true
                 Toast.makeText(context, "Erro: $msg", Toast.LENGTH_SHORT).show()
@@ -208,10 +219,11 @@ class CommentsDialog : BottomSheetDialogFragment() {
     }
 
     private fun updateHeader(count: Int) {
-        binding.txtCommentCount.text = if (count == 0)
-            getString(R.string.comments)
-        else
-            getString(R.string.comments_count, count)
+        binding.txtCommentCount.text = when (count) {
+            0 -> getString(R.string.comments)
+            1 -> getString(R.string.comment_count_one)
+            else -> getString(R.string.comments_count, count)
+        }
     }
 
     private fun showLoading(loading: Boolean) {

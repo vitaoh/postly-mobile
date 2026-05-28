@@ -35,12 +35,24 @@ class PublicProfileActivity : AppCompatActivity() {
     private val converter = Base64Converter()
 
     private var profileUserId: String = ""
+    private var isFollowingProfile = false
+    private var followersCount = 0
 
     private val publicProfileLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             setResult(RESULT_OK)
+            loadFollowInfo()
+        }
+    }
+
+    private val postLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            setResult(RESULT_OK)
+            loadPosts()
         }
     }
 
@@ -51,6 +63,7 @@ class PublicProfileActivity : AppCompatActivity() {
             setResult(RESULT_OK)
             adapter.clearUserCache()
             loadUser()
+            loadFollowInfo()
             loadPosts()
         }
     }
@@ -73,6 +86,7 @@ class PublicProfileActivity : AppCompatActivity() {
         setupRecycler()
         setupListeners()
         loadUser()
+        loadFollowInfo()
         loadPosts()
     }
 
@@ -86,13 +100,16 @@ class PublicProfileActivity : AppCompatActivity() {
 
     private fun setupRecycler() {
         adapter = PostAdapter(
-            currentUid = "",
+            currentUid = auth.getCurrentUid() ?: "",
             onEdit = {},
             onDelete = {},
             onComment = { post -> openCommentsDialog(post) },
             onAuthorClick = { userId ->
                 if (userId != profileUserId) openPublicProfile(userId)
-            }
+            },
+            onPostClick = { post -> openPost(post) },
+            onLike = { post -> toggleLike(post) },
+            showOwnerActions = false
         )
 
         binding.recyclerUserPosts.apply {
@@ -114,9 +131,12 @@ class PublicProfileActivity : AppCompatActivity() {
             binding.scrollView.smoothScrollTo(0, 0)
             adapter.clearUserCache()
             loadUser()
+            loadFollowInfo()
             loadPosts()
         }
-        binding.btnFollow.visibility = View.GONE
+        binding.btnFollow.visibility = if (isOwnProfile) View.GONE else View.VISIBLE
+        binding.btnFollow.isEnabled = false
+        binding.btnFollow.setOnClickListener { toggleFollow() }
         binding.txtBio.visibility = View.GONE
     }
 
@@ -132,11 +152,31 @@ class PublicProfileActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadFollowInfo() {
+        userDao.getFollowersCount(profileUserId) { count ->
+            if (isFinishing || isDestroyed) return@getFollowersCount
+            followersCount = count
+            binding.txtFollowersCount.text = count.toString()
+        }
+
+        userDao.getFollowingCount(profileUserId) { count ->
+            if (isFinishing || isDestroyed) return@getFollowingCount
+            binding.txtFollowingCount.text = count.toString()
+        }
+
+        val currentUid = auth.getCurrentUid().orEmpty()
+        if (currentUid.isBlank() || currentUid == profileUserId) return
+
+        userDao.isFollowing(currentUid, profileUserId) { following ->
+            if (isFinishing || isDestroyed) return@isFollowing
+            isFollowingProfile = following
+            updateFollowButton()
+        }
+    }
+
     private fun bindUser(user: User) {
         binding.txtName.text = user.name.ifBlank { getString(R.string.unknown_user) }
         binding.txtUsername.text = if (user.username.isBlank()) "" else "@${user.username}"
-        binding.txtFollowersCount.text = "0"
-        binding.txtFollowingCount.text = "0"
 
         if (!user.photo.isNullOrEmpty()) {
             val bitmap = converter.stringToBitmap(user.photo)
@@ -175,6 +215,65 @@ class PublicProfileActivity : AppCompatActivity() {
         if (userId.isBlank()) return
         publicProfileLauncher.launch(
             Intent(this, PublicProfileActivity::class.java).putExtra(EXTRA_USER_ID, userId)
+        )
+    }
+
+    private fun toggleLike(post: Post) {
+        val uid = auth.getCurrentUid() ?: return
+        postDao.toggleLike(
+            post = post,
+            userId = uid,
+            onSuccess = { updatedPost ->
+                adapter.updatePost(updatedPost)
+                setResult(RESULT_OK)
+            },
+            onError = { msg ->
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    private fun toggleFollow() {
+        val currentUid = auth.getCurrentUid().orEmpty()
+        if (currentUid.isBlank() || currentUid == profileUserId) return
+
+        val wasFollowing = isFollowingProfile
+        binding.btnFollow.isEnabled = false
+
+        userDao.toggleFollow(
+            currentUserId = currentUid,
+            targetUserId = profileUserId,
+            isFollowing = wasFollowing,
+            onSuccess = {
+                isFollowingProfile = !wasFollowing
+                followersCount = (followersCount + if (isFollowingProfile) 1 else -1)
+                    .coerceAtLeast(0)
+                binding.txtFollowersCount.text = followersCount.toString()
+                updateFollowButton()
+                setResult(RESULT_OK)
+            },
+            onError = { msg ->
+                binding.btnFollow.isEnabled = true
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    private fun updateFollowButton() {
+        binding.btnFollow.text = getString(
+            if (isFollowingProfile) R.string.following else R.string.follow
+        )
+        binding.btnFollow.alpha = if (isFollowingProfile) 0.86f else 1f
+        binding.btnFollow.isEnabled = true
+    }
+
+    private fun openPost(post: Post) {
+        if (post.id.isBlank()) return
+        postLauncher.launch(
+            Intent(this, PostActivity::class.java).putExtra(
+                PostActivity.EXTRA_POST_ID,
+                post.id
+            )
         )
     }
 }

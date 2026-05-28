@@ -3,7 +3,10 @@ package com.victor.postly.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.color.MaterialColors
+import com.victor.postly.R
 import com.victor.postly.dao.UserDao
 import com.victor.postly.databinding.ItemPostBinding
 import com.victor.postly.model.Post
@@ -19,7 +22,10 @@ class PostAdapter(
     private val onEdit: (Post) -> Unit,
     private val onDelete: (Post) -> Unit,
     private val onComment: (Post) -> Unit,
-    private val onAuthorClick: (String) -> Unit = {}
+    private val onAuthorClick: (String) -> Unit = {},
+    private val onPostClick: (Post) -> Unit = {},
+    private val onLike: (Post) -> Unit = {},
+    private val showOwnerActions: Boolean = true
 ) : RecyclerView.Adapter<PostAdapter.PostViewHolder>() {
 
     private val allPosts: MutableList<Post> = mutableListOf()
@@ -39,6 +45,9 @@ class PostAdapter(
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
         val post = posts[position]
         with(holder.binding) {
+            root.isClickable = true
+            root.isFocusable = true
+            root.setOnClickListener { onPostClick(post) }
 
             txtContent.text = post.description
             txtTimestamp.text = formatTime(post.timestamp)
@@ -58,21 +67,15 @@ class PostAdapter(
                 chipLocation.visibility = View.GONE
             }
 
-            val isOwner = post.userId == currentUid
+            val isOwner = showOwnerActions && post.userId == currentUid
             btnEdit.visibility = if (isOwner) View.VISIBLE else View.GONE
             btnDelete.visibility = if (isOwner) View.VISIBLE else View.GONE
             btnEdit.setOnClickListener { onEdit(post) }
             btnDelete.setOnClickListener { onDelete(post) }
 
             btnComment.setOnClickListener { onComment(post) }
-            if (post.commentCount > 0) {
-                txtCommentCount.visibility = View.VISIBLE
-                txtCommentCount.text = post.commentCount.toString()
-                txtCommentSeparator.visibility = View.VISIBLE
-            } else {
-                txtCommentCount.visibility = View.GONE
-                txtCommentSeparator.visibility = View.GONE
-            }
+            btnLike.setOnClickListener { onLike(post) }
+            bindActionCounts(holder.binding, post)
 
             txtName.visibility = View.VISIBLE
             txtUsername.visibility = View.VISIBLE
@@ -126,6 +129,23 @@ class PostAdapter(
             view.isFocusable = hasUser
             view.setOnClickListener(if (hasUser) listener else null)
         }
+    }
+
+    private fun bindActionCounts(binding: ItemPostBinding, post: Post) {
+        val normalColor = MaterialColors.getColor(
+            binding.root,
+            com.google.android.material.R.attr.colorOnSurfaceVariant
+        )
+        val likedColor = ContextCompat.getColor(binding.root.context, R.color.error)
+        val isLiked = post.likedBy.contains(currentUid)
+
+        binding.txtCommentCount.text = post.commentCount.toString()
+        binding.imgCommentIcon.setColorFilter(normalColor)
+        binding.txtCommentCount.setTextColor(normalColor)
+
+        binding.txtLikeCount.text = post.likeCount.toString()
+        binding.imgLikeIcon.setColorFilter(if (isLiked) likedColor else normalColor)
+        binding.txtLikeCount.setTextColor(if (isLiked) likedColor else normalColor)
     }
 
     override fun getItemCount(): Int = posts.size

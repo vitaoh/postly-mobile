@@ -16,7 +16,7 @@ class CommentDao {
     fun addComment(
         postId: String,
         comment: Comment,
-        onSuccess: () -> Unit,
+        onSuccess: (Comment) -> Unit,
         onError: (String) -> Unit
     ) {
         val postRef = db.collection("posts").document(postId)
@@ -28,7 +28,7 @@ class CommentDao {
             tx.set(docRef, commentFinal)
             tx.update(postRef, "commentCount", FieldValue.increment(1))
         }
-            .addOnSuccessListener { onSuccess() }
+            .addOnSuccessListener { onSuccess(commentFinal) }
             .addOnFailureListener { onError(it.message ?: "Erro ao comentar") }
     }
 
@@ -65,7 +65,15 @@ class CommentDao {
             .orderBy("timestamp", Query.Direction.ASCENDING)
             .get()
             .addOnSuccessListener { result ->
-                val comments = result.mapNotNull { it.toObject(Comment::class.java) }
+                val comments = result.mapNotNull { doc ->
+                    doc.toObject(Comment::class.java).let { comment ->
+                        if (comment.id.isBlank()) {
+                            comment.copy(id = doc.id, postId = postId)
+                        } else {
+                            comment
+                        }
+                    }
+                }
                 onResult(comments)
             }
             .addOnFailureListener { onResult(emptyList()) }
