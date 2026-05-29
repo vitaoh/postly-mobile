@@ -9,6 +9,8 @@ import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.victor.postly.R
@@ -55,6 +57,8 @@ class CommentsDialog : BottomSheetDialogFragment() {
 
         val currentUid = auth.getCurrentUid() ?: ""
 
+        setupInsets()
+
         adapter = CommentAdapter(
             currentUid = currentUid,
             onDelete = { comment -> confirmDeleteComment(comment) },
@@ -82,6 +86,25 @@ class CommentsDialog : BottomSheetDialogFragment() {
                 false
             }
         }
+    }
+
+    private fun setupInsets() {
+        val composerStartPadding = binding.dialogCommentComposer.paddingLeft
+        val composerTopPadding = binding.dialogCommentComposer.paddingTop
+        val composerEndPadding = binding.dialogCommentComposer.paddingRight
+        val composerBottomPadding = binding.dialogCommentComposer.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.dialogCommentComposer) { view, insets ->
+            val navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            view.setPadding(
+                composerStartPadding + navInsets.left,
+                composerTopPadding,
+                composerEndPadding + navInsets.right,
+                composerBottomPadding + navInsets.bottom
+            )
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.dialogCommentComposer)
     }
 
     override fun onStart() {

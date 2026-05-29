@@ -76,8 +76,13 @@
     <string name="search_hint">Buscar por descrição, cidade ou usuário…</string>
     <string name="new_post">Novo post</string>
     <string name="new_post_desc">Criar novo post</string>
+    <string name="feed">Feed</string>
+    <string name="for_you">For You</string>
+    <string name="following_feed">Following</string>
     <string name="no_posts_title">Nenhum post ainda</string>
     <string name="no_posts_subtitle">Seja o primeiro a postar! 🚀</string>
+    <string name="no_following_posts_title">Nenhum post de quem você segue</string>
+    <string name="no_following_posts_subtitle">Siga pessoas para ver os posts delas aqui.</string>
     <string name="no_results_title">Nenhum resultado</string>
     <string name="no_results_subtitle">Tente buscar por outro termo</string>
     <string name="no_posts_image_desc">Sem posts</string>
@@ -128,6 +133,15 @@
     <string name="followers">Seguidores</string>
     <string name="following">Seguindo</string>
     <string name="follow">Seguir</string>
+    <string name="message">Mensagem</string>
+    <string name="conversations">Conversas</string>
+    <string name="no_conversations_title">Nenhuma conversa ainda</string>
+    <string name="no_conversations_subtitle">Abra um perfil e comece um chat.</string>
+    <string name="no_messages_yet">Nenhuma mensagem ainda</string>
+    <string name="last_message_from_me">Voc&#234;: %1$s</string>
+    <string name="last_message_from_user">%1$s: %2$s</string>
+    <string name="write_a_message">Escreva uma mensagem…</string>
+    <string name="send_message">Enviar mensagem</string>
 
     <string name="edit_profile">Editar perfil</string>
 

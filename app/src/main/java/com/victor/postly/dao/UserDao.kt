@@ -88,6 +88,27 @@ class UserDao {
             .addOnFailureListener { onResult(0) }
     }
 
+    fun getFollowingIds(
+        userId: String,
+        onResult: (List<String>) -> Unit
+    ) {
+        if (userId.isBlank()) {
+            onResult(emptyList())
+            return
+        }
+
+        collection.document(userId)
+            .collection("following")
+            .get()
+            .addOnSuccessListener { result ->
+                val ids = result.documents.mapNotNull { doc ->
+                    doc.getString("userId")?.takeIf { it.isNotBlank() } ?: doc.id.takeIf { it.isNotBlank() }
+                }
+                onResult(ids)
+            }
+            .addOnFailureListener { onResult(emptyList()) }
+    }
+
     fun toggleFollow(
         currentUserId: String,
         targetUserId: String,

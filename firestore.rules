@@ -15,6 +15,11 @@ service cloud.firestore {
         && request.resource.data.userId == expectedUserId;
     }
 
+    function isChatMember(chatId) {
+      return signedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+    }
+
     match /users/{userId} {
       allow list: if true;
       allow get: if signedIn();
@@ -66,6 +71,37 @@ service cloud.firestore {
         allow delete: if signedIn()
           && resource.data.userId == request.auth.uid;
         allow update: if false;
+      }
+    }
+
+    match /chats/{chatId} {
+      allow get: if signedIn();
+      allow list: if signedIn()
+        && request.auth.uid in resource.data.participants;
+
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.participants.size() == 2;
+
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.participants == resource.data.participants
+        && request.resource.data.lastSenderId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['lastMessage', 'lastSenderId', 'lastTimestamp', 'updatedAt']);
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if isChatMember(chatId);
+
+        allow create: if isChatMember(chatId)
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.keys()
+            .hasOnly(['id', 'chatId', 'senderId', 'text', 'timestamp'])
+          && request.resource.data.chatId == chatId;
+
+        allow update, delete: if false;
       }
     }
   }

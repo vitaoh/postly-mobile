@@ -4,7 +4,7 @@
     <!-- Fundo roxo sólido -->
     <item>
         <shape>
-            <solid android:color="#9539CB" />
+            <solid android:color="@color/primary" />
         </shape>
     </item>
 

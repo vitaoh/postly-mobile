@@ -16,6 +16,12 @@ class PostDao {
         const val PAGE_SIZE = 5L
     }
 
+    private fun documentToPost(doc: DocumentSnapshot): Post? {
+        return doc.toObject(Post::class.java)?.let { post ->
+            if (post.id.isBlank()) post.copy(id = doc.id) else post
+        }
+    }
+
     // Gera o ID antes de salvar, garantindo que post.id sempre existe
     fun addPost(
         post: Post,
@@ -100,9 +106,7 @@ class PostDao {
         collection.document(postId)
             .get()
             .addOnSuccessListener { doc ->
-                val post = doc.toObject(Post::class.java)?.let {
-                    if (it.id.isBlank()) it.copy(id = doc.id) else it
-                }
+                val post = documentToPost(doc)
                 onResult(post)
             }
             .addOnFailureListener { e ->
@@ -121,7 +125,7 @@ class PostDao {
             .get()
             .addOnSuccessListener { result ->
                 val posts = result
-                    .mapNotNull { it.toObject(Post::class.java) }
+                    .mapNotNull { documentToPost(it) }
                     .sortedByDescending { it.timestamp }
                 onResult(posts)
             }
@@ -131,14 +135,52 @@ class PostDao {
             }
     }
 
-    // Primeira página — retorna o último DocumentSnapshot para usar como cursor
+    // Busca posts de varios usuarios para o feed Following.
+    fun getPostsByUsers(
+        userIds: List<String>,
+        onResult: (List<Post>) -> Unit
+    ) {
+        val ids = userIds.filter { it.isNotBlank() }.distinct()
+        if (ids.isEmpty()) {
+            onResult(emptyList())
+            return
+        }
+
+        val chunks = ids.chunked(10)
+        val posts = mutableListOf<Post>()
+        var pendingRequests = chunks.size
+
+        fun finishChunk() {
+            pendingRequests--
+            if (pendingRequests == 0) {
+                onResult(posts.sortedByDescending { it.timestamp })
+            }
+        }
+
+        chunks.forEach { chunk ->
+            collection
+                .whereIn("userId", chunk)
+                .get()
+                .addOnSuccessListener { result ->
+                    posts.addAll(result.mapNotNull { documentToPost(it) })
+                }
+                .addOnFailureListener { e ->
+                    Log.e("PostDao", "Erro ao buscar posts dos seguidos: ${e.message}")
+                }
+                .addOnCompleteListener {
+                    finishChunk()
+                }
+        }
+    }
+
+    // Primeira pagina do feed geral, retornando cursor para paginacao.
     fun getFirstPage(onResult: (List<Post>, DocumentSnapshot?) -> Unit) {
         collection
             .orderBy("timestamp", Query.Direction.DESCENDING)
             .limit(PAGE_SIZE)
             .get()
             .addOnSuccessListener { result ->
-                val posts = result.mapNotNull { it.toObject(Post::class.java) }
+                val posts = result.mapNotNull { documentToPost(it) }
                 val lastDoc = result.documents.lastOrNull()
                 onResult(posts, lastDoc)
             }
@@ -159,7 +201,7 @@ class PostDao {
             .limit(PAGE_SIZE)
             .get()
             .addOnSuccessListener { result ->
-                val posts = result.mapNotNull { it.toObject(Post::class.java) }
+                val posts = result.mapNotNull { documentToPost(it) }
                 val newLastDoc = result.documents.lastOrNull()
                 onResult(posts, newLastDoc)
             }

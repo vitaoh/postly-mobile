@@ -86,6 +86,22 @@ class PostActivity : AppCompatActivity() {
             view.setPadding(view.paddingLeft, topInset, view.paddingRight, view.paddingBottom)
             insets
         }
+
+        val composerStartPadding = binding.commentComposer.paddingLeft
+        val composerTopPadding = binding.commentComposer.paddingTop
+        val composerEndPadding = binding.commentComposer.paddingRight
+        val composerBottomPadding = binding.commentComposer.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.commentComposer) { view, insets ->
+            val navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            view.setPadding(
+                composerStartPadding + navInsets.left,
+                composerTopPadding,
+                composerEndPadding + navInsets.right,
+                composerBottomPadding + navInsets.bottom
+            )
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.commentComposer)
     }
 
     private fun setupComments() {

@@ -1,5 +1,6 @@
 package com.victor.postly.ui
 
+import android.content.res.ColorStateList
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
@@ -7,9 +8,11 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.color.MaterialColors
 import com.victor.postly.R
 import com.victor.postly.adapter.PostAdapter
 import com.victor.postly.auth.UserAuth
@@ -65,6 +68,14 @@ class PublicProfileActivity : AppCompatActivity() {
             loadUser()
             loadFollowInfo()
             loadPosts()
+        }
+    }
+
+    private val chatLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            setResult(RESULT_OK)
         }
     }
 
@@ -134,9 +145,12 @@ class PublicProfileActivity : AppCompatActivity() {
             loadFollowInfo()
             loadPosts()
         }
+        binding.profileActions.visibility = if (isOwnProfile) View.GONE else View.VISIBLE
         binding.btnFollow.visibility = if (isOwnProfile) View.GONE else View.VISIBLE
+        binding.btnMessage.visibility = if (isOwnProfile) View.GONE else View.VISIBLE
         binding.btnFollow.isEnabled = false
         binding.btnFollow.setOnClickListener { toggleFollow() }
+        binding.btnMessage.setOnClickListener { openChat() }
         binding.txtBio.visibility = View.GONE
     }
 
@@ -260,11 +274,40 @@ class PublicProfileActivity : AppCompatActivity() {
     }
 
     private fun updateFollowButton() {
+        val primary = ContextCompat.getColor(this, R.color.primary)
+        val onPrimary = ContextCompat.getColor(this, R.color.secundary)
+        val surface = MaterialColors.getColor(
+            binding.root,
+            com.google.android.material.R.attr.colorSurface
+        )
+
         binding.btnFollow.text = getString(
             if (isFollowingProfile) R.string.following else R.string.follow
         )
-        binding.btnFollow.alpha = if (isFollowingProfile) 0.86f else 1f
+        binding.btnFollow.alpha = 1f
+        binding.btnFollow.strokeColor = ColorStateList.valueOf(primary)
+        binding.btnFollow.strokeWidth = if (isFollowingProfile) {
+            resources.displayMetrics.density.toInt().coerceAtLeast(1)
+        } else {
+            0
+        }
+        binding.btnFollow.backgroundTintList = ColorStateList.valueOf(
+            if (isFollowingProfile) surface else primary
+        )
+        binding.btnFollow.setTextColor(if (isFollowingProfile) primary else onPrimary)
         binding.btnFollow.isEnabled = true
+    }
+
+    private fun openChat() {
+        val currentUid = auth.getCurrentUid().orEmpty()
+        if (currentUid.isBlank() || currentUid == profileUserId) return
+
+        chatLauncher.launch(
+            Intent(this, ChatActivity::class.java).putExtra(
+                ChatActivity.EXTRA_USER_ID,
+                profileUserId
+            )
+        )
     }
 
     private fun openPost(post: Post) {

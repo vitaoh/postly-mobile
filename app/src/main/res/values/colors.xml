@@ -2,8 +2,8 @@
 <resources>
     <!-- Brand (fixo em ambos os modos) -->
     <color name="primary">#9539CB</color>
-    <color name="primary_dark">#7B2FBE</color>
-    <color name="primary_light">#C084FC</color>
+    <color name="primary_dark">@color/primary</color>
+    <color name="primary_light">@color/primary</color>
     <color name="secundary">#FFFFFFFF</color>
 
     <!-- Semântico -->
