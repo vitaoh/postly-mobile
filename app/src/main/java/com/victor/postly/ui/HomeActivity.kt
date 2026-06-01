@@ -1,7 +1,10 @@
 package com.victor.postly.ui
 
+import android.Manifest
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -28,6 +31,8 @@ import com.victor.postly.dao.UserDao
 import com.victor.postly.databinding.ActivityHomeBinding
 import com.victor.postly.model.ChatThread
 import com.victor.postly.model.Post
+import com.victor.postly.notifications.LocalNotificationWatcher
+import com.victor.postly.notifications.NotificationHelper
 import com.victor.postly.utils.Base64Converter
 
 class HomeActivity : AppCompatActivity() {
@@ -55,6 +60,7 @@ class HomeActivity : AppCompatActivity() {
     private var currentSearchQuery: String = ""
     private var currentTab = TAB_FEED
     private var currentFeedMode = FEED_FOR_YOU
+    private var localNotificationWatcher: LocalNotificationWatcher? = null
 
     private val publicProfileLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -83,6 +89,10 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -101,6 +111,7 @@ class HomeActivity : AppCompatActivity() {
             return
         }
 
+        setupLocalNotifications()
         setupAdapter()
         setupRecycler()
         setupConversations()
@@ -116,6 +127,12 @@ class HomeActivity : AppCompatActivity() {
         super.onResume()
         loadAvatar()
         if (currentTab == TAB_CHATS) loadConversations()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        localNotificationWatcher?.stop()
+        localNotificationWatcher = null
     }
 
     private fun setupAdapter() {
@@ -160,6 +177,30 @@ class HomeActivity : AppCompatActivity() {
         binding.recyclerConversations.apply {
             adapter = conversationAdapter
             layoutManager = LinearLayoutManager(this@HomeActivity)
+        }
+    }
+
+    private fun setupLocalNotifications() {
+        NotificationHelper.createChannels(this)
+        startLocalNotificationWatcher()
+
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private fun startLocalNotificationWatcher() {
+        val uid = auth.getCurrentUid().orEmpty()
+        if (uid.isBlank()) return
+
+        if (localNotificationWatcher == null) {
+            localNotificationWatcher = LocalNotificationWatcher(this, uid).also { it.start() }
         }
     }
 

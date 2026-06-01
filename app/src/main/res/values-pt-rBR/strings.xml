@@ -143,6 +143,13 @@
     <string name="write_a_message">Escreva uma mensagem…</string>
     <string name="send_message">Enviar mensagem</string>
 
+    <string name="notification_channel_social_name">Notificacoes sociais</string>
+    <string name="notification_channel_social_description">Mensagens, comentarios e curtidas</string>
+    <string name="notification_new_comment_title">Novo comentario</string>
+    <string name="notification_new_comment_body">%1$s comentou: %2$s</string>
+    <string name="notification_new_like_title">Nova curtida</string>
+    <string name="notification_new_like_body">%1$s curtiu seu post</string>
+
     <string name="edit_profile">Editar perfil</string>
 
     <!-- Welcome ──────────────────────────────────────────────────────────── -->

@@ -103,12 +103,7 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         binding.btnLogout.setOnClickListener {
-            auth.logout()
-            startActivity(
-                Intent(this, LoginActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                }
-            )
+            logout()
         }
     }
 
@@ -245,5 +240,18 @@ class ProfileActivity : AppCompatActivity() {
         binding.btnLogout.isEnabled = !isLoading
         binding.btnChangePassword.isEnabled = !isLoading
         binding.btnSave.text = if (isLoading) "Salvando..." else "Salvar"
+    }
+
+    private fun logout() {
+        finishLogout()
+    }
+
+    private fun finishLogout() {
+        auth.logout()
+        startActivity(
+            Intent(this, WelcomeActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+        )
     }
 }
