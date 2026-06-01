@@ -145,4 +145,8 @@
 
     <string name="edit_profile">Editar perfil</string>
 
+    <!-- Welcome ──────────────────────────────────────────────────────────── -->
+    <string name="welcome_tagline">Compartilhe seus momentos.</string>
+    <string name="welcome_card_title">Bem-vindo ao Postly</string>
+
 </resources>
