@@ -28,6 +28,7 @@ class LocalNotificationWatcher(
 
         listenToMessages()
         listenToOwnPosts()
+        listenToFollowers()
     }
 
     fun stop() {
@@ -138,6 +139,34 @@ class LocalNotificationWatcher(
         commentRegistrations[postId] = registration
     }
 
+    private fun listenToFollowers() {
+        var initialLoaded = false
+        val registration = db.collection("users")
+            .document(currentUid)
+            .collection("followers")
+            .addSnapshotListener { snapshot, _ ->
+                snapshot ?: return@addSnapshotListener
+
+                snapshot.documentChanges.forEach { change ->
+                    if (!initialLoaded) return@forEach
+                    if (change.type != DocumentChange.Type.ADDED) return@forEach
+
+                    val followerId = change.document.getString("userId")
+                        ?.takeIf { it.isNotBlank() }
+                        ?: change.document.id.takeIf { it.isNotBlank() }
+                        ?: return@forEach
+
+                    if (followerId != currentUid) {
+                        notifyFollow(followerId)
+                    }
+                }
+
+                initialLoaded = true
+            }
+
+        registrations.add(registration)
+    }
+
     private fun notifyMessage(chat: ChatThread) {
         userDao.getUser(chat.lastSenderId) { user ->
             val title = displayName(user?.name, user?.username)
@@ -176,6 +205,19 @@ class LocalNotificationWatcher(
                 body = appContext.getString(R.string.notification_new_like_body, name),
                 type = NotificationHelper.TYPE_LIKE,
                 data = mapOf("postId" to postId)
+            )
+        }
+    }
+
+    private fun notifyFollow(followerId: String) {
+        userDao.getUser(followerId) { user ->
+            val name = displayName(user?.name, user?.username)
+            NotificationHelper.showNotification(
+                context = appContext,
+                title = appContext.getString(R.string.notification_new_follow_title),
+                body = appContext.getString(R.string.notification_new_follow_body, name),
+                type = NotificationHelper.TYPE_FOLLOW,
+                data = mapOf("userId" to followerId)
             )
         }
     }

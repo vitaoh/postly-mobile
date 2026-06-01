@@ -16,6 +16,7 @@ import com.victor.postly.R
 import com.victor.postly.ui.ChatActivity
 import com.victor.postly.ui.HomeActivity
 import com.victor.postly.ui.PostActivity
+import com.victor.postly.ui.PublicProfileActivity
 import kotlin.math.absoluteValue
 
 object NotificationHelper {
@@ -24,6 +25,7 @@ object NotificationHelper {
     const val TYPE_MESSAGE = "message"
     const val TYPE_COMMENT = "comment"
     const val TYPE_LIKE = "like"
+    const val TYPE_FOLLOW = "follow"
 
     fun createChannels(context: Context) {
         val channel = NotificationChannel(
@@ -97,6 +99,10 @@ object NotificationHelper {
 
             TYPE_COMMENT, TYPE_LIKE -> Intent(context, PostActivity::class.java).apply {
                 putExtra(PostActivity.EXTRA_POST_ID, data["postId"].orEmpty())
+            }
+
+            TYPE_FOLLOW -> Intent(context, PublicProfileActivity::class.java).apply {
+                putExtra(PublicProfileActivity.EXTRA_USER_ID, data["userId"].orEmpty())
             }
 
             else -> Intent(context, HomeActivity::class.java)

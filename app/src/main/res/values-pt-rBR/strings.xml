@@ -149,6 +149,8 @@
     <string name="notification_new_comment_body">%1$s comentou: %2$s</string>
     <string name="notification_new_like_title">Nova curtida</string>
     <string name="notification_new_like_body">%1$s curtiu seu post</string>
+    <string name="notification_new_follow_title">Novo seguidor</string>
+    <string name="notification_new_follow_body">%1$s comecou a seguir voce</string>
 
     <string name="edit_profile">Editar perfil</string>
 
