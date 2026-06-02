@@ -153,7 +153,7 @@
                 android:id="@+id/edtMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:imeOptions="actionSend"
+                android:imeOptions="actionSend|flagNoExtractUi"
                 android:inputType="textMultiLine|textCapSentences"
                 android:maxLines="4"
                 android:textColor="?attr/colorOnSurface" />

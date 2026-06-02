@@ -12,6 +12,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.victor.postly.R
 import com.victor.postly.adapter.CommentAdapter
@@ -109,8 +111,19 @@ class CommentsDialog : BottomSheetDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        // Garante que o dialog expanda sem que o teclado o sobreponha
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+
+        val bottomSheet = (dialog as? BottomSheetDialog)
+            ?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            ?: return
+
+        bottomSheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+        bottomSheet.requestLayout()
+
+        BottomSheetBehavior.from(bottomSheet).apply {
+            skipCollapsed = true
+            state = BottomSheetBehavior.STATE_EXPANDED
+        }
     }
 
     override fun onDestroyView() {

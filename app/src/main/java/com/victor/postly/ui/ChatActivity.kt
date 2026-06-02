@@ -72,6 +72,25 @@ class ChatActivity : AppCompatActivity() {
             view.setPadding(view.paddingLeft, topInset, view.paddingRight, view.paddingBottom)
             insets
         }
+
+        val composerStartPadding = binding.messageComposer.paddingLeft
+        val composerTopPadding = binding.messageComposer.paddingTop
+        val composerEndPadding = binding.messageComposer.paddingRight
+        val composerBottomPadding = binding.messageComposer.paddingBottom
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.messageComposer) { view, insets ->
+            val navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomInset = navInsets.bottom.coerceAtLeast(imeInsets.bottom)
+            view.setPadding(
+                composerStartPadding + navInsets.left,
+                composerTopPadding,
+                composerEndPadding + navInsets.right,
+                composerBottomPadding + bottomInset
+            )
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.messageComposer)
     }
 
     private fun setupMessages() {

@@ -93,11 +93,13 @@ class PostActivity : AppCompatActivity() {
         val composerBottomPadding = binding.commentComposer.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(binding.commentComposer) { view, insets ->
             val navInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val bottomInset = navInsets.bottom.coerceAtLeast(imeInsets.bottom)
             view.setPadding(
                 composerStartPadding + navInsets.left,
                 composerTopPadding,
                 composerEndPadding + navInsets.right,
-                composerBottomPadding + navInsets.bottom
+                composerBottomPadding + bottomInset
             )
             insets
         }

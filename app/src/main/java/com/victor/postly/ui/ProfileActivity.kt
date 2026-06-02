@@ -22,6 +22,7 @@ import com.victor.postly.auth.UserAuth
 import com.victor.postly.dao.UserDao
 import com.victor.postly.databinding.ActivityProfileBinding
 import com.victor.postly.model.User
+import com.victor.postly.security.AppUnlockManager
 import com.victor.postly.utils.Base64Converter
 
 class ProfileActivity : AppCompatActivity() {
@@ -247,6 +248,7 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun finishLogout() {
+        AppUnlockManager.reset()
         auth.logout()
         startActivity(
             Intent(this, WelcomeActivity::class.java).apply {

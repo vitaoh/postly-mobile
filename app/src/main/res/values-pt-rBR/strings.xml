@@ -4,6 +4,10 @@
     <!-- ── App ─────────────────────────────────────────────────────────────── -->
     <string name="app_name">Postly</string>
     <string name="app_logo_desc">Logo do Postly</string>
+    <string name="app_unlock_title">Desbloquear Postly</string>
+    <string name="app_unlock_subtitle">Use biometria, PIN ou senha do celular.</string>
+    <string name="app_unlock_error">Nao foi possivel desbloquear o app.</string>
+    <string name="app_unlock_unavailable">Biometria ou senha do celular nao estao configuradas.</string>
 
     <!-- ── Login ────────────────────────────────────────────────────────────── -->
     <string name="login_to_postly">Entre no Postly</string>
@@ -142,6 +146,8 @@
     <string name="last_message_from_user">%1$s: %2$s</string>
     <string name="write_a_message">Escreva uma mensagem…</string>
     <string name="send_message">Enviar mensagem</string>
+    <string name="message_date_today">Hoje</string>
+    <string name="message_date_yesterday">Ontem</string>
 
     <string name="notification_channel_social_name">Notificacoes sociais</string>
     <string name="notification_channel_social_description">Mensagens, comentarios e curtidas</string>

@@ -1,7 +1,9 @@
 package com.victor.postly.adapter
 
+import android.content.Context
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -10,6 +12,7 @@ import com.victor.postly.R
 import com.victor.postly.databinding.ItemMessageBinding
 import com.victor.postly.model.ChatMessage
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -46,6 +49,15 @@ class MessageAdapter(
         )
 
         with(holder.binding) {
+            val showDate = position == 0 || !isSameDay(
+                message.timestamp,
+                messages[position - 1].timestamp
+            )
+            txtDateSeparator.visibility = if (showDate) View.VISIBLE else View.GONE
+            if (showDate) {
+                txtDateSeparator.text = formatDateSeparator(holder.binding.root.context, message.timestamp)
+            }
+
             messageRow.gravity = if (isOwn) Gravity.END else Gravity.START
             messageBubble.setCardBackgroundColor(if (isOwn) ownColor else otherColor)
             txtMessageText.text = message.text
@@ -71,5 +83,30 @@ class MessageAdapter(
 
     private fun formatTime(timestamp: Long): String {
         return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(timestamp))
+    }
+
+    private fun formatDateSeparator(context: Context, timestamp: Long): String {
+        val today = Calendar.getInstance()
+        val date = Calendar.getInstance().apply { timeInMillis = timestamp }
+        val yesterday = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, -1)
+        }
+
+        return when {
+            isSameDay(date, today) -> context.getString(R.string.message_date_today)
+            isSameDay(date, yesterday) -> context.getString(R.string.message_date_yesterday)
+            else -> SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(timestamp))
+        }
+    }
+
+    private fun isSameDay(firstTimestamp: Long, secondTimestamp: Long): Boolean {
+        val first = Calendar.getInstance().apply { timeInMillis = firstTimestamp }
+        val second = Calendar.getInstance().apply { timeInMillis = secondTimestamp }
+        return isSameDay(first, second)
+    }
+
+    private fun isSameDay(first: Calendar, second: Calendar): Boolean {
+        return first.get(Calendar.YEAR) == second.get(Calendar.YEAR) &&
+            first.get(Calendar.DAY_OF_YEAR) == second.get(Calendar.DAY_OF_YEAR)
     }
 }

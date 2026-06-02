@@ -11,6 +11,8 @@ import com.victor.postly.R
 import com.victor.postly.auth.UserAuth
 import com.victor.postly.dao.UserDao
 import com.victor.postly.databinding.ActivityLoginBinding
+import com.victor.postly.security.AppUnlockHelper
+import com.victor.postly.security.AppUnlockManager
 
 class LoginActivity : AppCompatActivity() {
 
@@ -31,12 +33,11 @@ class LoginActivity : AppCompatActivity() {
             insets
         }
 
-        if (auth.isLoggedIn()) {
-            goToHome()
-            return
-        }
-
         setupListeners()
+
+        if (auth.isLoggedIn()) {
+            requireUnlockAndGoHome()
+        }
     }
 
     private fun setupListeners() {
@@ -104,6 +105,7 @@ class LoginActivity : AppCompatActivity() {
         auth.login(email, senha) { sucesso, erro ->
             setLoading(false)
             if (sucesso) {
+                AppUnlockManager.markUnlocked()
                 goToHome()
             } else {
                 Toast.makeText(
@@ -152,6 +154,14 @@ class LoginActivity : AppCompatActivity() {
             Intent(this, HomeActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
+        )
+    }
+
+    private fun requireUnlockAndGoHome() {
+        AppUnlockHelper.requireUnlock(
+            activity = this,
+            onUnlocked = { goToHome() },
+            onCanceled = { finish() }
         )
     }
 

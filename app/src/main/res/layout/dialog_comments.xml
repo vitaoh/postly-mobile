@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@drawable/bg_dialog_rounded"
     android:clipToOutline="true"
     android:orientation="vertical">
@@ -58,7 +58,6 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:maxHeight="380dp"
         android:minHeight="120dp"
         android:paddingVertical="4dp" />
 
@@ -127,7 +126,7 @@
                 android:id="@+id/edtComment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:imeOptions="actionSend"
+                android:imeOptions="actionSend|flagNoExtractUi"
                 android:inputType="textMultiLine|textCapSentences"
                 android:maxLines="4"
                 android:textColor="?attr/colorOnSurface" />

@@ -8,6 +8,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.victor.postly.auth.UserAuth
 import com.victor.postly.databinding.ActivityWelcomeBinding
+import com.victor.postly.security.AppUnlockHelper
 
 class WelcomeActivity : AppCompatActivity() {
 
@@ -17,12 +18,6 @@ class WelcomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // Se o usuário já está logado, vai direto pra Home
-        if (auth.isLoggedIn()) {
-            goToHome()
-            return
-        }
 
         binding = ActivityWelcomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -34,6 +29,10 @@ class WelcomeActivity : AppCompatActivity() {
         }
 
         setupListeners()
+
+        if (auth.isLoggedIn()) {
+            requireUnlockAndGoHome()
+        }
     }
 
     private fun setupListeners() {
@@ -44,6 +43,14 @@ class WelcomeActivity : AppCompatActivity() {
         binding.btnSignUp.setOnClickListener {
             startActivity(Intent(this, SignUpActivity::class.java))
         }
+    }
+
+    private fun requireUnlockAndGoHome() {
+        AppUnlockHelper.requireUnlock(
+            activity = this,
+            onUnlocked = { goToHome() },
+            onCanceled = { finish() }
+        )
     }
 
     private fun goToHome() {

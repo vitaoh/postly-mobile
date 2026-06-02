@@ -12,6 +12,7 @@ import com.victor.postly.auth.UserAuth
 import com.victor.postly.dao.UserDao
 import com.victor.postly.databinding.ActivitySignupBinding
 import com.victor.postly.model.User
+import com.victor.postly.security.AppUnlockManager
 
 class SignUpActivity : AppCompatActivity() {
 
@@ -128,6 +129,7 @@ class SignUpActivity : AppCompatActivity() {
     }
 
     private fun goToHome() {
+        AppUnlockManager.markUnlocked()
         startActivity(
             Intent(this, HomeActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

@@ -33,6 +33,8 @@ import com.victor.postly.model.ChatThread
 import com.victor.postly.model.Post
 import com.victor.postly.notifications.LocalNotificationWatcher
 import com.victor.postly.notifications.NotificationHelper
+import com.victor.postly.security.AppUnlockHelper
+import com.victor.postly.security.AppUnlockManager
 import com.victor.postly.utils.Base64Converter
 
 class HomeActivity : AppCompatActivity() {
@@ -111,6 +113,19 @@ class HomeActivity : AppCompatActivity() {
             return
         }
 
+        if (!AppUnlockManager.isUnlocked()) {
+            AppUnlockHelper.requireUnlock(
+                activity = this,
+                onUnlocked = { setupHome() },
+                onCanceled = { finish() }
+            )
+            return
+        }
+
+        setupHome()
+    }
+
+    private fun setupHome() {
         setupLocalNotifications()
         setupAdapter()
         setupRecycler()

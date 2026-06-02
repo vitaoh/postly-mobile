@@ -4,6 +4,10 @@
     <!-- ── App ─────────────────────────────────────────────────────────────── -->
     <string name="app_name">Postly</string>
     <string name="app_logo_desc">Postly logo</string>
+    <string name="app_unlock_title">Unlock Postly</string>
+    <string name="app_unlock_subtitle">Use your fingerprint, face, PIN or phone password.</string>
+    <string name="app_unlock_error">Could not unlock the app.</string>
+    <string name="app_unlock_unavailable">Biometrics or phone password are not configured.</string>
 
     <!-- ── Login ────────────────────────────────────────────────────────────── -->
     <string name="login_to_postly">Sign in to Postly</string>
@@ -142,6 +146,8 @@
     <string name="last_message_from_user">%1$s: %2$s</string>
     <string name="write_a_message">Write a message…</string>
     <string name="send_message">Send message</string>
+    <string name="message_date_today">Today</string>
+    <string name="message_date_yesterday">Yesterday</string>
 
     <string name="notification_channel_social_name">Social notifications</string>
     <string name="notification_channel_social_description">Messages, comments and likes</string>
