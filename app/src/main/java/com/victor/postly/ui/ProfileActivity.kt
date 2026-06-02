@@ -139,7 +139,7 @@ class ProfileActivity : AppCompatActivity() {
             photo = photoBase64
         )
 
-        userDao.save(
+        userDao.saveUniqueUsername(
             user = updatedUser,
             onSuccess = {
                 setLoading(false)
@@ -149,6 +149,7 @@ class ProfileActivity : AppCompatActivity() {
             },
             onError = { msg ->
                 setLoading(false)
+                binding.tilUsername.error = msg
                 Toast.makeText(this, "Erro ao salvar: $msg", Toast.LENGTH_LONG).show()
             }
         )

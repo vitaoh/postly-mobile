@@ -114,7 +114,7 @@ class SignUpActivity : AppCompatActivity() {
             email = binding.edtEmail.text.toString().trim()
         )
 
-        userDao.save(
+        userDao.saveUniqueUsername(
             user = user,
             onSuccess = {
                 setLoading(false)
@@ -123,6 +123,7 @@ class SignUpActivity : AppCompatActivity() {
             },
             onError = { msg ->
                 setLoading(false)
+                binding.tilUsername.error = msg
                 Toast.makeText(this, "Erro ao salvar dados: $msg", Toast.LENGTH_LONG).show()
             }
         )

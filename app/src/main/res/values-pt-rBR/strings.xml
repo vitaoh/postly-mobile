@@ -12,6 +12,11 @@
     <!-- ── Login ────────────────────────────────────────────────────────────── -->
     <string name="login_to_postly">Entre no Postly</string>
     <string name="login">Entrar</string>
+    <string name="login_with_google">Entrar com Google</string>
+    <string name="google_login_failed">Erro ao entrar com Google</string>
+    <string name="google_username_dialog_title">Escolha seu nome de usuario</string>
+    <string name="google_username_dialog_subtitle">Esse nome aparece no seu perfil e nao pode estar em uso.</string>
+    <string name="continue_action">Continuar</string>
     <string name="logging_in">Entrando…</string>
     <string name="forgot_my_password">Esqueci minha senha</string>
     <string name="create_new_account">Criar nova conta</string>
@@ -29,6 +34,7 @@
 
     <!-- ── Campos comuns ─────────────────────────────────────────────────────── -->
     <string name="username">Nome de usuário</string>
+    <string name="username_prefix">\@</string>
     <string name="name">Nome</string>
     <string name="email">E-mail</string>
     <string name="email_or_username">E-mail ou usuário</string>
@@ -38,6 +44,7 @@
     <!-- ── Validações de campo ───────────────────────────────────────────────── -->
     <string name="error_field_username_empty">Informe um nome de usuário</string>
     <string name="error_field_username_short">Mínimo de 3 caracteres</string>
+    <string name="error_field_username_invalid">Use apenas letras, numeros, ponto ou underline</string>
     <string name="error_field_name_empty">Informe seu nome</string>
     <string name="error_username_not_found">Usuário não encontrado</string>
     <string name="error_field_email_empty">Informe seu e-mail</string>

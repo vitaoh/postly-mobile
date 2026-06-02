@@ -2,6 +2,8 @@ package com.victor.postly.auth
 
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 
 class UserAuth {
 
@@ -24,6 +26,14 @@ class UserAuth {
     fun sendPasswordReset(email: String, callback: (Boolean) -> Unit) {
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task -> callback(task.isSuccessful) }
+    }
+
+    fun loginWithGoogle(idToken: String, callback: (Boolean, String?) -> Unit) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                callback(task.isSuccessful, task.exception?.message)
+            }
     }
 
     /**
@@ -57,6 +67,8 @@ class UserAuth {
     }
 
     fun getCurrentUid(): String? = auth.currentUser?.uid
+
+    fun getCurrentUser(): FirebaseUser? = auth.currentUser
 
     fun isLoggedIn(): Boolean = auth.currentUser != null
 

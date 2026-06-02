@@ -12,6 +12,11 @@
     <!-- ── Login ────────────────────────────────────────────────────────────── -->
     <string name="login_to_postly">Sign in to Postly</string>
     <string name="login">Sign in</string>
+    <string name="login_with_google">Sign in with Google</string>
+    <string name="google_login_failed">Google sign-in failed</string>
+    <string name="google_username_dialog_title">Choose your username</string>
+    <string name="google_username_dialog_subtitle">This username appears on your profile and must be unique.</string>
+    <string name="continue_action">Continue</string>
     <string name="logging_in">Signing in…</string>
     <string name="forgot_my_password">Forgot my password</string>
     <string name="create_new_account">Create new account</string>
@@ -29,6 +34,7 @@
 
     <!-- ── Common fields ────────────────────────────────────────────────────── -->
     <string name="username">Username</string>
+    <string name="username_prefix">\@</string>
     <string name="name">Name</string>
     <string name="email">E-mail</string>
     <string name="email_or_username">E-mail or username</string>
@@ -38,6 +44,7 @@
     <!-- ── Field validation ──────────────────────────────────────────────────── -->
     <string name="error_field_username_empty">Enter a username</string>
     <string name="error_field_username_short">At least 3 characters required</string>
+    <string name="error_field_username_invalid">Use only letters, numbers, dot or underscore</string>
     <string name="error_field_name_empty">Enter your name</string>
     <string name="error_username_not_found">User not found</string>
     <string name="error_field_email_empty">Enter your email</string>

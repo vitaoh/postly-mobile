@@ -55,6 +55,7 @@ dependencies {
 
     // Firebase Authentication ← NOVO
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.android.gms:play-services-auth:21.5.0")
 
     // Glide para as imagens
     implementation("com.github.bumptech.glide:glide:4.16.0")

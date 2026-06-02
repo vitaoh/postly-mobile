@@ -34,6 +34,37 @@ class UserDao {
      * Busca um usuário pelo username (campo "username" no Firestore).
      * Retorna null se não encontrado.
      */
+    fun saveUniqueUsername(
+        user: User,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val normalizedUser = user.copy(username = user.username.trim().lowercase())
+        if (normalizedUser.uid.isBlank() || normalizedUser.username.isBlank()) {
+            onError("Usuario invalido")
+            return
+        }
+
+        collection
+            .whereEqualTo("username", normalizedUser.username)
+            .get()
+            .addOnSuccessListener { result ->
+                val usernameTaken = result.documents.any { doc ->
+                    val existingUser = doc.toObject(User::class.java)
+                    val existingUid = existingUser?.uid?.takeIf { it.isNotBlank() } ?: doc.id
+                    existingUid != normalizedUser.uid
+                }
+
+                if (usernameTaken) {
+                    onError("Nome de usuario ja esta em uso")
+                    return@addOnSuccessListener
+                }
+
+                save(normalizedUser, onSuccess, onError)
+            }
+            .addOnFailureListener { onError(it.message ?: "Erro ao verificar usuario") }
+    }
+
     fun getUserByUsername(
         username: String,
         onResult: (User?) -> Unit

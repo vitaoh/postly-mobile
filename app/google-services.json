@@ -12,7 +12,20 @@
           "package_name": "com.victor.postly"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "771729527718-3nu8d2ng0ta3ptltdpkk1kj3hp7rmi1t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.victor.postly",
+            "certificate_hash": "f51b3ffba1f5a5a169934d603fbf3206ca09427e"
+          }
+        },
+        {
+          "client_id": "771729527718-jqku3i3cpcl385dtoie8kc7982srofn2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBYxax375bqx_tJgQ_bpAuCVl6PsB9fg0g"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "771729527718-jqku3i3cpcl385dtoie8kc7982srofn2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
