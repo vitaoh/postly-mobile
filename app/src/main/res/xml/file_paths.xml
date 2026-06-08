@@ -3,4 +3,7 @@
     <cache-path
         name="post_images"
         path="post_images/" />
+    <cache-path
+        name="shake_photos"
+        path="." />
 </paths>

@@ -121,6 +121,47 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/appBarLayout" />
 
+    <!-- Barra de gravação de áudio (visível durante gravação) -->
+    <LinearLayout
+        android:id="@+id/layoutRecordingBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/messageComposer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <View
+            android:id="@+id/recordingDot"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:background="#FFE53935"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/txtRecordingTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Gravando… 0:00"
+            android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelRecording"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancelar"
+            android:textColor="?attr/colorError" />
+
+    </LinearLayout>
+
+    <!-- Composer principal -->
     <LinearLayout
         android:id="@+id/messageComposer"
         android:layout_width="0dp"
@@ -133,6 +174,30 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Botão de foto -->
+        <ImageButton
+            android:id="@+id/btnSendPhoto"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Enviar foto"
+            android:padding="6dp"
+            android:src="@drawable/ic_chat"
+            android:tint="@color/primary" />
+
+        <!-- Botão de áudio (pressionar e segurar) -->
+        <ImageButton
+            android:id="@+id/btnRecordAudio"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Gravar áudio"
+            android:padding="6dp"
+            android:src="@android:drawable/ic_btn_speak_now"
+            android:tint="@color/primary" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilMessage"
