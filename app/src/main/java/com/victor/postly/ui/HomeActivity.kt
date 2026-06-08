@@ -1,6 +1,8 @@
 package com.victor.postly.ui
 
 import android.Manifest
+import android.hardware.SensorManager
+import android.net.Uri
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.pm.PackageManager
@@ -36,6 +38,7 @@ import com.victor.postly.notifications.NotificationHelper
 import com.victor.postly.security.AppUnlockHelper
 import com.victor.postly.security.AppUnlockManager
 import com.victor.postly.utils.Base64Converter
+import com.victor.postly.utils.ShakeDetector
 
 class HomeActivity : AppCompatActivity() {
 
@@ -63,6 +66,10 @@ class HomeActivity : AppCompatActivity() {
     private var currentTab = TAB_FEED
     private var currentFeedMode = FEED_FOR_YOU
     private var localNotificationWatcher: LocalNotificationWatcher? = null
+
+    // ── Shake-to-post ──────────────────────────────────────────────────────
+    private lateinit var sensorManager: SensorManager
+    private val shakeDetector = ShakeDetector { onShakeDetected() }
 
     private val publicProfileLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -101,6 +108,7 @@ class HomeActivity : AppCompatActivity() {
 
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.appBarLayout) { view, insets ->
             val topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
@@ -142,6 +150,12 @@ class HomeActivity : AppCompatActivity() {
         super.onResume()
         loadAvatar()
         if (currentTab == TAB_CHATS) loadConversations()
+        shakeDetector.start(sensorManager)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        shakeDetector.stop(sensorManager)
     }
 
     override fun onDestroy() {
@@ -544,6 +558,69 @@ class HomeActivity : AppCompatActivity() {
         binding.txtEmptyTitle.text = getString(R.string.no_conversations_title)
         binding.txtEmptySubtitle.text = getString(R.string.no_conversations_subtitle)
         binding.layoutEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+    }
+
+    private fun onShakeDetected() {
+        // Roda na thread principal (ShakeDetector usa SensorEventListener)
+        runOnUiThread {
+            // Feedback visual rápido
+            Toast.makeText(this, "📷 Abrindo câmera para novo post…", Toast.LENGTH_SHORT).show()
+            openCameraForPost()
+        }
+    }
+
+    private var shakeCameraUri: Uri? = null
+
+    private val shakeCameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { saved ->
+        if (saved) {
+            shakeCameraUri?.let { uri -> openNewPostDialogWithPhoto(uri) }
+        }
+        shakeCameraUri = null
+    }
+
+    private val shakeCameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) openCameraForPost() else
+            Toast.makeText(this, "Permissão de câmera necessária", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun openCameraForPost() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            shakeCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            return
+        }
+
+        val photoFile = java.io.File(cacheDir, "shake_post_${System.currentTimeMillis()}.jpg")
+        val uri = androidx.core.content.FileProvider.getUriForFile(
+            this,
+            "$packageName.fileprovider",
+            photoFile
+        )
+        shakeCameraUri = uri
+        shakeCameraLauncher.launch(uri)
+    }
+
+    private fun openNewPostDialogWithPhoto(photoUri: Uri) {
+        try {
+            val stream = contentResolver.openInputStream(photoUri) ?: return
+            val bytes = stream.readBytes()
+            stream.close()
+            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                ?: return
+
+            val dialog = NewPostDialog().apply {
+                preloadedPhoto = bitmap
+                onPostSaved = { loadFirstPage() }
+            }
+            dialog.show(supportFragmentManager, "shake_post")
+        } catch (_: Exception) {
+            Toast.makeText(this, "Erro ao carregar foto", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun goToLogin() {

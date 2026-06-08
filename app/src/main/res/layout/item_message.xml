@@ -40,12 +40,57 @@
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="8dp">
 
+                <!-- Texto normal -->
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/txtMessageText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:maxWidth="280dp"
                     android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                <!-- Imagem da mensagem -->
+                <ImageView
+                    android:id="@+id/imgMessagePhoto"
+                    android:layout_width="220dp"
+                    android:layout_height="180dp"
+                    android:scaleType="centerCrop"
+                    android:visibility="gone"
+                    android:contentDescription="Foto"
+                    android:background="#10000000" />
+
+                <!-- Reprodutor de áudio -->
+                <LinearLayout
+                    android:id="@+id/layoutAudioPlayer"
+                    android:layout_width="220dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:visibility="gone">
+
+                    <ImageButton
+                        android:id="@+id/btnPlayAudio"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:padding="4dp"
+                        android:src="@android:drawable/ic_media_play"
+                        android:contentDescription="Reproduzir áudio" />
+
+                    <SeekBar
+                        android:id="@+id/seekBarAudio"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="4dp" />
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/txtAudioDuration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceLabelSmall"
+                        android:text="0:00" />
+
+                </LinearLayout>
 
                 <com.google.android.material.textview.MaterialTextView
                     android:id="@+id/txtMessageTime"

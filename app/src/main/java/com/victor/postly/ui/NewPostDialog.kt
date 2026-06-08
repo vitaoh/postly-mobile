@@ -36,6 +36,7 @@ class NewPostDialog : DialogFragment() {
 
     var onPostSaved: (() -> Unit)? = null
     var editPost: Post? = null
+    var preloadedPhoto: Bitmap? = null   // foto tirada via shake-to-post
 
     private var selectedBitmap: Bitmap? = null
     private val converter = Base64Converter()
@@ -103,6 +104,13 @@ class NewPostDialog : DialogFragment() {
             }
 
             binding.btnPostar.text = getString(R.string.save)
+        }
+
+        // Foto pré-carregada via shake-to-post
+        preloadedPhoto?.let { bmp ->
+            selectedBitmap = bmp
+            binding.imgPost.setImageBitmap(bmp)
+            binding.imgPost.visibility = View.VISIBLE
         }
 
         binding.btnSelectImage.setOnClickListener { showImageSourceDialog() }

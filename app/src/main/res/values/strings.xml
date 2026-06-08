@@ -171,4 +171,16 @@
     <string name="welcome_tagline">Share your moments.</string>
     <string name="welcome_card_title">Welcome to Postly</string>
 
+    <!-- ── Shake-to-post ────────────────────────────────────────────────── -->
+    <string name="shake_toast">📷 Opening camera for new post…</string>
+
+    <!-- ── Chat media ───────────────────────────────────────────────────── -->
+    <string name="send_photo">Send photo</string>
+    <string name="record_audio">Hold to record audio</string>
+    <string name="cancel_recording">Cancel</string>
+    <string name="msg_photo">📷 Photo</string>
+    <string name="msg_audio">🎤 Audio</string>
+    <string name="error_camera_permission">Camera permission required</string>
+    <string name="error_mic_permission">Microphone permission required</string>
+
 </resources>

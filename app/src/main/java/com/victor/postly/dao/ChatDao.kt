@@ -122,7 +122,8 @@ class ChatDao {
             chatId = chatId,
             senderId = senderId,
             text = cleanText,
-            timestamp = now
+            timestamp = now,
+            type = ChatMessage.TYPE_TEXT
         )
 
         db.runBatch { batch ->
@@ -139,6 +140,57 @@ class ChatDao {
         }
             .addOnSuccessListener { onSuccess(message) }
             .addOnFailureListener { onError(it.message ?: "Erro ao enviar mensagem") }
+    }
+
+    fun sendMediaMessage(
+        chatId: String,
+        senderId: String,
+        mediaBase64: String,
+        mediaMimeType: String,
+        type: String,           // ChatMessage.TYPE_IMAGE ou TYPE_AUDIO
+        onSuccess: (ChatMessage) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (chatId.isBlank() || senderId.isBlank() || mediaBase64.isBlank()) {
+            onError("Mídia inválida")
+            return
+        }
+
+        val now = System.currentTimeMillis()
+        val chatRef = collection.document(chatId)
+        val messageRef = chatRef.collection("messages").document()
+
+        val previewText = when (type) {
+            ChatMessage.TYPE_IMAGE -> "📷 Foto"
+            ChatMessage.TYPE_AUDIO -> "🎤 Áudio"
+            else -> "Mídia"
+        }
+
+        val message = ChatMessage(
+            id = messageRef.id,
+            chatId = chatId,
+            senderId = senderId,
+            text = previewText,
+            timestamp = now,
+            type = type,
+            mediaBase64 = mediaBase64,
+            mediaMimeType = mediaMimeType
+        )
+
+        db.runBatch { batch ->
+            batch.set(messageRef, message)
+            batch.update(
+                chatRef,
+                mapOf(
+                    "lastMessage" to previewText,
+                    "lastSenderId" to senderId,
+                    "lastTimestamp" to now,
+                    "updatedAt" to now
+                )
+            )
+        }
+            .addOnSuccessListener { onSuccess(message) }
+            .addOnFailureListener { onError(it.message ?: "Erro ao enviar mídia") }
     }
 
     private fun fillMissingLastSenders(

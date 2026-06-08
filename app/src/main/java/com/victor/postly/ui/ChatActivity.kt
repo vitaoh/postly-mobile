@@ -1,13 +1,26 @@
 package com.victor.postly.ui
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.media.MediaRecorder
+import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.MediaStore
+import android.util.Base64
+import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +33,8 @@ import com.victor.postly.databinding.ActivityChatBinding
 import com.victor.postly.model.ChatMessage
 import com.victor.postly.model.User
 import com.victor.postly.utils.Base64Converter
+import java.io.ByteArrayOutputStream
+import java.io.File
 
 class ChatActivity : AppCompatActivity() {
 
@@ -40,9 +55,54 @@ class ChatActivity : AppCompatActivity() {
     private var targetUserId: String = ""
     private var isSendingMessage = false
 
+    // ── Áudio ──────────────────────────────────────────────────────────────
+    private var mediaRecorder: MediaRecorder? = null
+    private var audioFile: File? = null
+    private var isRecording = false
+    private var recordingSeconds = 0
+    private val recordingHandler = Handler(Looper.getMainLooper())
+    private val recordingTicker = object : Runnable {
+        override fun run() {
+            if (isRecording) {
+                recordingSeconds++
+                val min = recordingSeconds / 60
+                val sec = recordingSeconds % 60
+                binding.txtRecordingTime.text = "Gravando… %d:%02d".format(min, sec)
+                recordingHandler.postDelayed(this, 1000)
+            }
+        }
+    }
+
+    // ── Launchers ──────────────────────────────────────────────────────────
     private val publicProfileLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { }
+
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { sendPhotoFromUri(it) }
+    }
+
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicturePreview()
+    ) { bitmap: Bitmap? ->
+        bitmap?.let { sendPhotoBitmap(it) }
+    }
+
+    private val micPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) startRecording() else
+            Toast.makeText(this, "Permissão de microfone necessária", Toast.LENGTH_SHORT).show()
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) cameraLauncher.launch(null) else
+            Toast.makeText(this, "Permissão de câmera necessária", Toast.LENGTH_SHORT).show()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +124,11 @@ class ChatActivity : AppCompatActivity() {
         setupListeners()
         loadTargetUser()
         openConversation()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopRecordingAndDiscard()
     }
 
     private fun setupInsets() {
@@ -103,6 +168,7 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setupListeners() {
         binding.btnBack.setOnClickListener { finish() }
         binding.layoutChatHeader.setOnClickListener { openPublicProfile() }
@@ -116,7 +182,192 @@ class ChatActivity : AppCompatActivity() {
                 false
             }
         }
+
+        // Botão de foto: abre galeria ou câmera
+        binding.btnSendPhoto.setOnClickListener { showPhotoSourceDialog() }
+
+        // Botão de áudio: pressionar e segurar para gravar
+        binding.btnRecordAudio.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    requestMicAndRecord()
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    stopRecordingAndSend()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        binding.btnCancelRecording.setOnClickListener {
+            stopRecordingAndDiscard()
+        }
     }
+
+    // ── Foto ───────────────────────────────────────────────────────────────
+
+    private fun showPhotoSourceDialog() {
+        val items = arrayOf("📷 Câmera", "🖼️ Galeria")
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Enviar foto")
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> openCamera()
+                    1 -> galleryLauncher.launch("image/*")
+                }
+            }
+            .show()
+    }
+
+    private fun openCamera() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            cameraLauncher.launch(null)
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun sendPhotoBitmap(bitmap: Bitmap) {
+        val out = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, out)
+        val base64 = Base64.encodeToString(out.toByteArray(), Base64.DEFAULT)
+        sendMedia(base64, "image/jpeg", ChatMessage.TYPE_IMAGE)
+    }
+
+    private fun sendPhotoFromUri(uri: Uri) {
+        try {
+            val stream = contentResolver.openInputStream(uri) ?: return
+            val bytes = stream.readBytes()
+            stream.close()
+            val bmp = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                ?: return
+            sendPhotoBitmap(bmp)
+        } catch (_: Exception) {
+            Toast.makeText(this, "Erro ao carregar imagem", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ── Áudio ──────────────────────────────────────────────────────────────
+
+    private fun requestMicAndRecord() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            startRecording()
+        } else {
+            micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    private fun startRecording() {
+        if (isRecording) return
+
+        val file = File.createTempFile("rec_", ".aac", cacheDir)
+        audioFile = file
+
+        try {
+            mediaRecorder = MediaRecorder(this).apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setOutputFile(file.absolutePath)
+                prepare()
+                start()
+            }
+
+            isRecording = true
+            recordingSeconds = 0
+            binding.layoutRecordingBar.visibility = View.VISIBLE
+            recordingHandler.post(recordingTicker)
+
+            // Animar dot vermelho
+            blinkRecordingDot()
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Erro ao iniciar gravação", Toast.LENGTH_SHORT).show()
+            audioFile?.delete()
+            audioFile = null
+        }
+    }
+
+    private fun stopRecordingAndSend() {
+        if (!isRecording) return
+        finishRecording()
+
+        val file = audioFile ?: return
+        if (file.length() < 500) {   // arquivo muito pequeno = clique acidental
+            file.delete()
+            audioFile = null
+            return
+        }
+
+        try {
+            val base64 = Base64.encodeToString(file.readBytes(), Base64.DEFAULT)
+            sendMedia(base64, "audio/aac", ChatMessage.TYPE_AUDIO)
+        } catch (_: Exception) {
+            Toast.makeText(this, "Erro ao processar áudio", Toast.LENGTH_SHORT).show()
+        } finally {
+            file.delete()
+            audioFile = null
+        }
+    }
+
+    private fun stopRecordingAndDiscard() {
+        finishRecording()
+        audioFile?.delete()
+        audioFile = null
+    }
+
+    private fun finishRecording() {
+        if (!isRecording) return
+        isRecording = false
+        recordingHandler.removeCallbacks(recordingTicker)
+        binding.layoutRecordingBar.visibility = View.GONE
+
+        try {
+            mediaRecorder?.stop()
+            mediaRecorder?.release()
+        } catch (_: Exception) {}
+        mediaRecorder = null
+    }
+
+    private fun blinkRecordingDot() {
+        val dot = binding.recordingDot
+        dot.animate().alpha(0f).setDuration(500).withEndAction {
+            dot.animate().alpha(1f).setDuration(500).withEndAction {
+                if (isRecording) blinkRecordingDot()
+            }.start()
+        }.start()
+    }
+
+    // ── Envio de mídia ─────────────────────────────────────────────────────
+
+    private fun sendMedia(base64: String, mimeType: String, type: String) {
+        if (chatId.isBlank()) return
+        val currentUid = auth.getCurrentUid().orEmpty()
+        if (currentUid.isBlank()) return
+
+        chatDao.sendMediaMessage(
+            chatId = chatId,
+            senderId = currentUid,
+            mediaBase64 = base64,
+            mediaMimeType = mimeType,
+            type = type,
+            onSuccess = { message ->
+                addMessage(message)
+                setResult(RESULT_OK)
+            },
+            onError = { msg ->
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+
+    // ── Chat base ──────────────────────────────────────────────────────────
 
     private fun openConversation() {
         val currentUid = auth.getCurrentUid().orEmpty()
@@ -155,7 +406,8 @@ class ChatActivity : AppCompatActivity() {
 
     private fun bindUser(user: User) {
         binding.txtChatName.text = user.name.ifBlank { getString(R.string.unknown_user) }
-        binding.txtChatUsername.text = if (user.username.isBlank()) "" else "@${user.username}"
+        binding.txtChatUsername.text =
+            if (user.username.isBlank()) "" else "@${user.username}"
         if (!user.photo.isNullOrEmpty()) {
             val bitmap = converter.stringToBitmap(user.photo)
             binding.imgChatAvatar.setImageBitmap(bitmap)
