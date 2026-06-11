@@ -140,8 +140,8 @@
             android:id="@+id/recordingDot"
             android:layout_width="10dp"
             android:layout_height="10dp"
-            android:background="#FFE53935"
-            android:layout_marginEnd="8dp" />
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_recording_dot" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/txtRecordingTime"
@@ -182,9 +182,9 @@
             android:layout_height="40dp"
             android:layout_marginEnd="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Enviar foto"
+            android:contentDescription="@string/send_photo"
             android:padding="6dp"
-            android:src="@drawable/ic_chat"
+            android:src="@drawable/ic_photo"
             android:tint="@color/primary" />
 
         <!-- Botão de áudio (pressionar e segurar) -->
@@ -194,9 +194,9 @@
             android:layout_height="40dp"
             android:layout_marginEnd="4dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Gravar áudio"
+            android:contentDescription="@string/record_audio"
             android:padding="6dp"
-            android:src="@android:drawable/ic_btn_speak_now"
+            android:src="@drawable/ic_mic"
             android:tint="@color/primary" />
 
         <com.google.android.material.textfield.TextInputLayout

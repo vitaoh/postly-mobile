@@ -1,7 +1,9 @@
 package com.victor.postly.adapter
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
@@ -31,7 +33,13 @@ class MessageAdapter(
     // Controla qual MediaPlayer está ativo para não sobrepor áudios
     private var activePlayer: MediaPlayer? = null
     private var activePlayBtnReset: (() -> Unit)? = null
+    private var activeTempFile: java.io.File? = null
+    private var activeProgressRunnable: Runnable? = null
     private val handler = Handler(Looper.getMainLooper())
+
+    // Duração (ms) de cada áudio, por id da mensagem, para exibir sem precisar dar play
+    private val audioDurationCache = mutableMapOf<String, Int>()
+    private val audioDurationsLoading = mutableSetOf<String>()
 
     class MessageViewHolder(val binding: ItemMessageBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -120,12 +128,61 @@ class MessageAdapter(
     ) {
         val binding = holder.binding
         binding.seekBarAudio.progress = 0
-        binding.txtAudioDuration.text = "0:00"
         binding.btnPlayAudio.setImageResource(android.R.drawable.ic_media_play)
+
+        val cachedDuration = audioDurationCache[message.id]
+        if (cachedDuration != null) {
+            binding.txtAudioDuration.text = formatAudioTime(cachedDuration)
+        } else {
+            binding.txtAudioDuration.text = "0:00"
+            loadAudioDuration(message)
+        }
+
+        // Na bolha própria (roxa) os controles usam a cor do texto para ter contraste
+        val controlColor = if (isOwn) {
+            ownTextColor
+        } else {
+            ContextCompat.getColor(binding.root.context, R.color.primary)
+        }
+        binding.btnPlayAudio.imageTintList = ColorStateList.valueOf(controlColor)
+        binding.seekBarAudio.progressTintList = ColorStateList.valueOf(controlColor)
+        binding.seekBarAudio.thumbTintList = ColorStateList.valueOf(controlColor)
 
         binding.btnPlayAudio.setOnClickListener {
             toggleAudioPlayback(binding, message, isOwn, ownTextColor, otherTextColor)
         }
+    }
+
+    private fun loadAudioDuration(message: ChatMessage) {
+        if (message.id.isBlank() || !audioDurationsLoading.add(message.id)) return
+
+        Thread {
+            var duration = 0
+            try {
+                val bytes = Base64.decode(message.mediaBase64, Base64.DEFAULT)
+                val tmpFile = java.io.File.createTempFile("audio_meta_", ".m4a")
+                try {
+                    tmpFile.writeBytes(bytes)
+                    val retriever = MediaMetadataRetriever()
+                    retriever.setDataSource(tmpFile.absolutePath)
+                    duration = retriever
+                        .extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                        ?.toIntOrNull() ?: 0
+                    retriever.release()
+                } finally {
+                    tmpFile.delete()
+                }
+            } catch (_: Exception) { }
+
+            handler.post {
+                audioDurationsLoading.remove(message.id)
+                if (duration > 0) {
+                    audioDurationCache[message.id] = duration
+                    val index = messages.indexOfFirst { it.id == message.id }
+                    if (index >= 0) notifyItemChanged(index)
+                }
+            }
+        }.start()
     }
 
     private fun toggleAudioPlayback(
@@ -148,7 +205,7 @@ class MessageAdapter(
 
         try {
             val bytes = Base64.decode(message.mediaBase64, Base64.DEFAULT)
-            val tmpFile = java.io.File.createTempFile("audio_", ".aac", binding.root.context.cacheDir)
+            val tmpFile = java.io.File.createTempFile("audio_", ".m4a", binding.root.context.cacheDir)
             tmpFile.writeBytes(bytes)
 
             val mp = MediaPlayer().apply {
@@ -157,10 +214,13 @@ class MessageAdapter(
             }
 
             activePlayer = mp
+            activeTempFile = tmpFile
+            val totalDuration = mp.duration
+            audioDurationCache[message.id] = totalDuration
             activePlayBtnReset = {
                 binding.btnPlayAudio.setImageResource(android.R.drawable.ic_media_play)
                 binding.seekBarAudio.progress = 0
-                binding.txtAudioDuration.text = "0:00"
+                binding.txtAudioDuration.text = formatAudioTime(totalDuration)
             }
 
             binding.btnPlayAudio.setImageResource(android.R.drawable.ic_media_pause)
@@ -180,6 +240,7 @@ class MessageAdapter(
                     }
                 }
             }
+            activeProgressRunnable = updateRunnable
             handler.post(updateRunnable)
 
             // Seekbar manual
@@ -197,7 +258,10 @@ class MessageAdapter(
                 binding.btnPlayAudio.setImageResource(android.R.drawable.ic_media_play)
                 binding.seekBarAudio.progress = 0
                 binding.txtAudioDuration.text = formatAudioTime(mp.duration)
+                mp.release()
                 activePlayer = null
+                activeTempFile = null
+                activeProgressRunnable = null
                 tmpFile.delete()
             }
         } catch (_: Exception) { }
@@ -205,12 +269,20 @@ class MessageAdapter(
 
     private fun stopActivePlayer() {
         try {
+            activeProgressRunnable?.let { handler.removeCallbacks(it) }
             activePlayer?.stop()
             activePlayer?.release()
         } catch (_: Exception) {}
         activePlayer = null
+        activeTempFile?.delete()
+        activeTempFile = null
+        activeProgressRunnable = null
         activePlayBtnReset?.invoke()
         activePlayBtnReset = null
+    }
+
+    fun releasePlayer() {
+        stopActivePlayer()
     }
 
     override fun getItemCount(): Int = messages.size

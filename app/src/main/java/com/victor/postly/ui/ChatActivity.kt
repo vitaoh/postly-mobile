@@ -2,19 +2,21 @@ package com.victor.postly.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.ContentValues
+import android.app.Dialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.MediaStore
 import android.util.Base64
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -30,10 +32,10 @@ import com.victor.postly.auth.UserAuth
 import com.victor.postly.dao.ChatDao
 import com.victor.postly.dao.UserDao
 import com.victor.postly.databinding.ActivityChatBinding
+import com.victor.postly.databinding.DialogImageSourceBinding
 import com.victor.postly.model.ChatMessage
 import com.victor.postly.model.User
 import com.victor.postly.utils.Base64Converter
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 class ChatActivity : AppCompatActivity() {
@@ -54,6 +56,7 @@ class ChatActivity : AppCompatActivity() {
     private var chatId: String = ""
     private var targetUserId: String = ""
     private var isSendingMessage = false
+    private var isSendingMedia = false
 
     // ── Áudio ──────────────────────────────────────────────────────────────
     private var mediaRecorder: MediaRecorder? = null
@@ -129,6 +132,9 @@ class ChatActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         stopRecordingAndDiscard()
+        if (::messageAdapter.isInitialized) {
+            messageAdapter.releasePlayer()
+        }
     }
 
     private fun setupInsets() {
@@ -209,16 +215,26 @@ class ChatActivity : AppCompatActivity() {
     // ── Foto ───────────────────────────────────────────────────────────────
 
     private fun showPhotoSourceDialog() {
-        val items = arrayOf("📷 Câmera", "🖼️ Galeria")
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Enviar foto")
-            .setItems(items) { _, which ->
-                when (which) {
-                    0 -> openCamera()
-                    1 -> galleryLauncher.launch("image/*")
-                }
-            }
-            .show()
+        if (isSendingMedia || isRecording) return
+
+        val sourceBinding = DialogImageSourceBinding.inflate(layoutInflater)
+        val dialog = Dialog(this)
+        dialog.setContentView(sourceBinding.root)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+
+        sourceBinding.cardTakePhoto.setOnClickListener {
+            dialog.dismiss()
+            openCamera()
+        }
+
+        sourceBinding.cardChooseGallery.setOnClickListener {
+            dialog.dismiss()
+            galleryLauncher.launch("image/*")
+        }
+
+        dialog.show()
+        val width = (resources.displayMetrics.widthPixels * 0.88).toInt()
+        dialog.window?.setLayout(width, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 
     private fun openCamera() {
@@ -232,9 +248,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun sendPhotoBitmap(bitmap: Bitmap) {
-        val out = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, out)
-        val base64 = Base64.encodeToString(out.toByteArray(), Base64.DEFAULT)
+        val base64 = converter.bitmapToString(bitmap)
         sendMedia(base64, "image/jpeg", ChatMessage.TYPE_IMAGE)
     }
 
@@ -254,6 +268,8 @@ class ChatActivity : AppCompatActivity() {
     // ── Áudio ──────────────────────────────────────────────────────────────
 
     private fun requestMicAndRecord() {
+        if (isSendingMedia) return
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
             == PackageManager.PERMISSION_GRANTED
         ) {
@@ -266,13 +282,13 @@ class ChatActivity : AppCompatActivity() {
     private fun startRecording() {
         if (isRecording) return
 
-        val file = File.createTempFile("rec_", ".aac", cacheDir)
+        val file = File.createTempFile("rec_", ".m4a", cacheDir)
         audioFile = file
 
         try {
             mediaRecorder = MediaRecorder(this).apply {
                 setAudioSource(MediaRecorder.AudioSource.MIC)
-                setOutputFormat(MediaRecorder.OutputFormat.AAC_ADTS)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
                 setOutputFile(file.absolutePath)
                 prepare()
@@ -282,6 +298,10 @@ class ChatActivity : AppCompatActivity() {
             isRecording = true
             recordingSeconds = 0
             binding.layoutRecordingBar.visibility = View.VISIBLE
+            binding.btnSendPhoto.isEnabled = false
+            binding.btnSendMessage.isEnabled = false
+            binding.btnSendPhoto.alpha = 0.45f
+            binding.btnSendMessage.alpha = 0.45f
             recordingHandler.post(recordingTicker)
 
             // Animar dot vermelho
@@ -307,7 +327,7 @@ class ChatActivity : AppCompatActivity() {
 
         try {
             val base64 = Base64.encodeToString(file.readBytes(), Base64.DEFAULT)
-            sendMedia(base64, "audio/aac", ChatMessage.TYPE_AUDIO)
+            sendMedia(base64, "audio/mp4", ChatMessage.TYPE_AUDIO)
         } catch (_: Exception) {
             Toast.makeText(this, "Erro ao processar áudio", Toast.LENGTH_SHORT).show()
         } finally {
@@ -327,6 +347,10 @@ class ChatActivity : AppCompatActivity() {
         isRecording = false
         recordingHandler.removeCallbacks(recordingTicker)
         binding.layoutRecordingBar.visibility = View.GONE
+        binding.btnSendPhoto.isEnabled = !isSendingMedia
+        binding.btnSendMessage.isEnabled = !isSendingMessage
+        binding.btnSendPhoto.alpha = if (isSendingMedia) 0.45f else 1f
+        binding.btnSendMessage.alpha = if (isSendingMessage) 0.45f else 1f
 
         try {
             mediaRecorder?.stop()
@@ -347,10 +371,11 @@ class ChatActivity : AppCompatActivity() {
     // ── Envio de mídia ─────────────────────────────────────────────────────
 
     private fun sendMedia(base64: String, mimeType: String, type: String) {
-        if (chatId.isBlank()) return
+        if (chatId.isBlank() || isSendingMedia) return
         val currentUid = auth.getCurrentUid().orEmpty()
         if (currentUid.isBlank()) return
 
+        setMediaSending(true)
         chatDao.sendMediaMessage(
             chatId = chatId,
             senderId = currentUid,
@@ -358,13 +383,23 @@ class ChatActivity : AppCompatActivity() {
             mediaMimeType = mimeType,
             type = type,
             onSuccess = { message ->
+                setMediaSending(false)
                 addMessage(message)
                 setResult(RESULT_OK)
             },
             onError = { msg ->
+                setMediaSending(false)
                 Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
             }
         )
+    }
+
+    private fun setMediaSending(sending: Boolean) {
+        isSendingMedia = sending
+        binding.btnSendPhoto.isEnabled = !sending
+        binding.btnRecordAudio.isEnabled = !sending
+        binding.btnSendPhoto.alpha = if (sending) 0.45f else 1f
+        binding.btnRecordAudio.alpha = if (sending) 0.45f else 1f
     }
 
     // ── Chat base ──────────────────────────────────────────────────────────

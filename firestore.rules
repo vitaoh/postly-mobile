@@ -21,6 +21,8 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
+      // "list" aberto é necessário: o login por username resolve o e-mail
+      // antes de autenticar (LoginActivity.resolveUsernameAndLogin)
       allow list: if true;
       allow get: if signedIn();
       allow create, update, delete: if isSelf(userId);
@@ -56,9 +58,28 @@ service cloud.firestore {
         && request.resource.data.userId == request.auth.uid;
 
       allow update: if signedIn() && (
-        request.auth.uid == resource.data.userId ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount']) ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'likedBy'])
+        // Dono edita o post, mas não pode transferi-lo para outro usuário
+        (request.auth.uid == resource.data.userId
+          && request.resource.data.userId == resource.data.userId) ||
+
+        // Contador de comentários: qualquer usuário logado, apenas +1/-1
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentCount'])
+          && (request.resource.data.commentCount == resource.data.get('commentCount', 0) + 1
+            || request.resource.data.commentCount == resource.data.get('commentCount', 0) - 1)) ||
+
+        // Curtida: o usuário só pode adicionar/remover o próprio uid
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'likedBy'])
+          && (
+            (request.resource.data.likedBy.toSet()
+                .difference(resource.data.get('likedBy', []).toSet()) == [request.auth.uid].toSet()
+              && request.resource.data.likedBy.size() == resource.data.get('likedBy', []).size() + 1
+              && request.resource.data.likeCount == resource.data.get('likeCount', 0) + 1)
+            ||
+            (resource.data.get('likedBy', []).toSet()
+                .difference(request.resource.data.likedBy.toSet()) == [request.auth.uid].toSet()
+              && request.resource.data.likedBy.size() == resource.data.get('likedBy', []).size() - 1
+              && request.resource.data.likeCount == resource.data.get('likeCount', 0) - 1)
+          ))
       );
 
       allow delete: if signedIn()
@@ -75,13 +96,17 @@ service cloud.firestore {
     }
 
     match /chats/{chatId} {
-      allow get: if signedIn();
+      // "get" em doc inexistente (resource == null) é necessário para o
+      // fluxo createOrGetChat; doc existente só para participantes
+      allow get: if signedIn()
+        && (resource == null || request.auth.uid in resource.data.participants);
       allow list: if signedIn()
         && request.auth.uid in resource.data.participants;
 
       allow create: if signedIn()
         && request.auth.uid in request.resource.data.participants
-        && request.resource.data.participants.size() == 2;
+        && request.resource.data.participants.size() == 2
+        && request.resource.data.participants[0] != request.resource.data.participants[1];
 
       allow update: if signedIn()
         && request.auth.uid in resource.data.participants
@@ -97,9 +122,21 @@ service cloud.firestore {
 
         allow create: if isChatMember(chatId)
           && request.resource.data.senderId == request.auth.uid
-          && request.resource.data.keys()
-            .hasOnly(['id', 'chatId', 'senderId', 'text', 'timestamp'])
-          && request.resource.data.chatId == chatId;
+          && request.resource.data.chatId == chatId
+          && request.resource.data.keys().hasOnly(
+            ['id', 'chatId', 'senderId', 'text', 'timestamp',
+             'type', 'mediaBase64', 'mediaMimeType'])
+          && request.resource.data.get('type', 'text') in ['text', 'image', 'audio']
+          && (
+            request.resource.data.get('type', 'text') == 'text'
+              ? request.resource.data.text is string
+                && request.resource.data.text.size() > 0
+              : request.resource.data.mediaBase64 is string
+                && request.resource.data.mediaBase64.size() > 0
+                // Margem abaixo do limite de 1 MiB por documento do Firestore
+                && request.resource.data.mediaBase64.size() < 1000000
+                && request.resource.data.mediaMimeType is string
+          );
 
         allow update, delete: if false;
       }

@@ -22,6 +22,7 @@ import com.victor.postly.databinding.LayoutPublicProfileBinding
 import com.victor.postly.model.Post
 import com.victor.postly.model.User
 import com.victor.postly.utils.Base64Converter
+import com.victor.postly.utils.ConfirmDialogHelper
 
 class PublicProfileActivity : AppCompatActivity() {
 
@@ -110,17 +111,18 @@ class PublicProfileActivity : AppCompatActivity() {
     }
 
     private fun setupRecycler() {
+        val isOwnProfile = profileUserId == auth.getCurrentUid()
         adapter = PostAdapter(
             currentUid = auth.getCurrentUid() ?: "",
-            onEdit = {},
-            onDelete = {},
+            onEdit = { post -> openEditDialog(post) },
+            onDelete = { post -> confirmDeletePost(post) },
             onComment = { post -> openCommentsDialog(post) },
             onAuthorClick = { userId ->
                 if (userId != profileUserId) openPublicProfile(userId)
             },
             onPostClick = { post -> openPost(post) },
             onLike = { post -> toggleLike(post) },
-            showOwnerActions = false
+            showOwnerActions = isOwnProfile
         )
 
         binding.recyclerUserPosts.apply {
@@ -211,6 +213,44 @@ class PublicProfileActivity : AppCompatActivity() {
                 getString(R.string.posts)
             }
         }
+    }
+
+    private fun openEditDialog(post: Post) {
+        val dialog = NewPostDialog().apply {
+            editPost = post
+            onPostSaved = {
+                setResult(RESULT_OK)
+                loadPosts()
+            }
+        }
+        dialog.show(supportFragmentManager, "edit_post_${post.id}")
+    }
+
+    private fun confirmDeletePost(post: Post) {
+        ConfirmDialogHelper.showDeleteDialog(
+            context = this,
+            title = getString(R.string.delete_post),
+            message = getString(R.string.delete_post_message),
+            onConfirm = { deletePost(post) }
+        )
+    }
+
+    private fun deletePost(post: Post) {
+        postDao.deletePost(
+            postId = post.id,
+            onSuccess = {
+                adapter.removePost(post)
+                setResult(RESULT_OK)
+                loadPosts()
+            },
+            onError = { msg ->
+                Toast.makeText(
+                    this,
+                    getString(R.string.error_delete_post, msg),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        )
     }
 
     private fun openCommentsDialog(post: Post) {

@@ -49,14 +49,16 @@
                     android:textAppearance="?attr/textAppearanceBodyMedium" />
 
                 <!-- Imagem da mensagem -->
-                <ImageView
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/imgMessagePhoto"
                     android:layout_width="220dp"
                     android:layout_height="180dp"
+                    android:adjustViewBounds="true"
+                    android:background="?attr/colorSurfaceContainerHigh"
+                    android:contentDescription="@string/msg_photo"
                     android:scaleType="centerCrop"
                     android:visibility="gone"
-                    android:contentDescription="Foto"
-                    android:background="#10000000" />
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Medium" />
 
                 <!-- Reprodutor de áudio -->
                 <LinearLayout
@@ -72,16 +74,19 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/msg_audio"
                         android:padding="4dp"
                         android:src="@android:drawable/ic_media_play"
-                        android:contentDescription="Reproduzir áudio" />
+                        android:tint="@color/primary" />
 
                     <SeekBar
                         android:id="@+id/seekBarAudio"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="4dp"
                         android:layout_weight="1"
-                        android:layout_marginHorizontal="4dp" />
+                        android:progressTint="@color/primary"
+                        android:thumbTint="@color/primary" />
 
                     <com.google.android.material.textview.MaterialTextView
                         android:id="@+id/txtAudioDuration"
