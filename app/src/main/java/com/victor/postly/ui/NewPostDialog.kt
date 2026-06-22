@@ -28,6 +28,8 @@ import com.victor.postly.model.Post
 import com.victor.postly.utils.Base64Converter
 import com.victor.postly.utils.LocalizacaoHelper
 import java.io.File
+import androidx.exifinterface.media.ExifInterface
+import android.graphics.Matrix
 
 class NewPostDialog : DialogFragment() {
 
@@ -248,9 +250,39 @@ class NewPostDialog : DialogFragment() {
             MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
         }
 
-        selectedBitmap = bitmap
-        binding.imgPost.setImageBitmap(bitmap)
+        val corrected = correctBitmapOrientation(uri, bitmap)
+        selectedBitmap = corrected
+        binding.imgPost.setImageBitmap(corrected)
         binding.imgPost.visibility = View.VISIBLE
+    }
+
+    private fun correctBitmapOrientation(uri: Uri, bitmap: Bitmap): Bitmap {
+        return try {
+            val inputStream = requireContext().contentResolver.openInputStream(uri) ?: return bitmap
+            val exif = ExifInterface(inputStream)
+            inputStream.close()
+
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+
+            val rotation = when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90  -> 90f
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+                else -> return bitmap
+            }
+
+            val matrix = Matrix().apply { postRotate(rotation) }
+            val rotated = Bitmap.createBitmap(
+                bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
+            )
+            if (rotated != bitmap) bitmap.recycle()
+            rotated
+        } catch (_: Exception) {
+            bitmap
+        }
     }
 
     // ─── Salvar post ──────────────────────────────────────────────────────────

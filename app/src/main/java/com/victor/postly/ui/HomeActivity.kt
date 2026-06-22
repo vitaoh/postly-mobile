@@ -39,6 +39,8 @@ import com.victor.postly.security.AppUnlockHelper
 import com.victor.postly.security.AppUnlockManager
 import com.victor.postly.utils.Base64Converter
 import com.victor.postly.utils.ShakeDetector
+import androidx.exifinterface.media.ExifInterface
+import android.graphics.Matrix
 
 class HomeActivity : AppCompatActivity() {
 
@@ -613,13 +615,44 @@ class HomeActivity : AppCompatActivity() {
             val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 ?: return
 
+            val correctedBitmap = correctBitmapOrientation(photoUri, bitmap)
+
             val dialog = NewPostDialog().apply {
-                preloadedPhoto = bitmap
+                preloadedPhoto = correctedBitmap
                 onPostSaved = { loadFirstPage() }
             }
             dialog.show(supportFragmentManager, "shake_post")
         } catch (_: Exception) {
             Toast.makeText(this, "Erro ao carregar foto", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun correctBitmapOrientation(uri: Uri, bitmap: android.graphics.Bitmap): android.graphics.Bitmap {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return bitmap
+            val exif = ExifInterface(inputStream)
+            inputStream.close()
+
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+
+            val rotation = when (orientation) {
+                ExifInterface.ORIENTATION_ROTATE_90  -> 90f
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+                else -> return bitmap
+            }
+
+            val matrix = Matrix().apply { postRotate(rotation) }
+            val rotated = android.graphics.Bitmap.createBitmap(
+                bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
+            )
+            if (rotated != bitmap) bitmap.recycle()
+            rotated
+        } catch (_: Exception) {
+            bitmap
         }
     }
 
