@@ -83,4 +83,4 @@ Gerencia as conversas entre dois usuários, com metadados da última mensagem, r
 
 ## 🎥 Vídeo Demonstrativo
 
-> 🔗 *Link do vídeo será adicionado em breve.*
+> 🔗 [*Vídeo demonstrativo.*](https://www.youtube.com/shorts/Vqk6EP3pI6w)
