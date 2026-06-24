@@ -36,6 +36,7 @@ import com.victor.postly.databinding.DialogImageSourceBinding
 import com.victor.postly.model.ChatMessage
 import com.victor.postly.model.User
 import com.victor.postly.utils.Base64Converter
+import com.victor.postly.utils.SoundEffectHelper
 import java.io.File
 
 class ChatActivity : AppCompatActivity() {
@@ -384,6 +385,7 @@ class ChatActivity : AppCompatActivity() {
             type = type,
             onSuccess = { message ->
                 setMediaSending(false)
+                SoundEffectHelper.playTap()
                 addMessage(message)
                 setResult(RESULT_OK)
             },
@@ -482,6 +484,7 @@ class ChatActivity : AppCompatActivity() {
                 isSendingMessage = false
                 binding.btnSendMessage.isEnabled = true
                 binding.edtMessage.setText("")
+                SoundEffectHelper.playTap()
                 addMessage(message)
                 setResult(RESULT_OK)
             },

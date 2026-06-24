@@ -35,14 +35,29 @@ O app foi desenvolvido nativamente para Android utilizando **Kotlin**, com integ
 
 ## 🔧 Recursos Utilizados
 
-### 📡 Sensores
+### 📡 Recursos e sensores (os 3 exigidos)
 
-| Sensor | Uso no App |
-|--------|-----------|
-| **Acelerômetro** | Ao detectar que o dispositivo foi sacudido (*shake gesture*), o app abre automaticamente a câmera para capturar uma foto e criar uma nova publicação |
-| **Câmera** | Captura de imagens para criação de posts e envio de fotos nas conversas do chat |
-| **GPS / Localização** | Associação de coordenadas geográficas às publicações criadas pelos usuários |
-| **Microfone** | Gravação e envio de mensagens de voz no chat em tempo real |
+| Recurso | Categoria | Uso no App |
+|---------|-----------|------------|
+| **Câmera** | Multimídia | Captura de imagens para criação de posts e envio de fotos nas conversas do chat |
+| **Microfone** | Multimídia | Gravação e envio de mensagens de voz no chat em tempo real (`MediaRecorder`) |
+| **Acelerômetro** | Sensor de movimento | Ao detectar que o dispositivo foi sacudido (*shake gesture*), o app abre automaticamente a câmera para criar uma nova publicação |
+
+#### Recurso adicional
+
+| Recurso | Uso no App |
+|---------|-----------|
+| **GPS / Localização** | Associação de coordenadas geográficas às publicações criadas pelos usuários (funcionalidade extra) |
+
+---
+
+### 🔔 Feedback ao usuário
+
+O app oferece feedback **visual e sonoro**:
+
+- **Toast** — confirmações e mensagens de erro em todo o aplicativo
+- **Notificações** — novas mensagens, curtidas, comentários e seguidores (canal de alta prioridade com som do sistema)
+- **Efeitos sonoros** — bipe curto de confirmação ao enviar mensagens/áudios no chat e ao curtir uma publicação
 
 ---
 

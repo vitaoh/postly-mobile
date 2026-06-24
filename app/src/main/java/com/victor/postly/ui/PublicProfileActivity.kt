@@ -23,6 +23,7 @@ import com.victor.postly.model.Post
 import com.victor.postly.model.User
 import com.victor.postly.utils.Base64Converter
 import com.victor.postly.utils.ConfirmDialogHelper
+import com.victor.postly.utils.SoundEffectHelper
 
 class PublicProfileActivity : AppCompatActivity() {
 
@@ -278,6 +279,7 @@ class PublicProfileActivity : AppCompatActivity() {
             post = post,
             userId = uid,
             onSuccess = { updatedPost ->
+                if (updatedPost.likedBy.contains(uid)) SoundEffectHelper.playTap()
                 adapter.updatePost(updatedPost)
                 setResult(RESULT_OK)
             },

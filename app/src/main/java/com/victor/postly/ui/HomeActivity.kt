@@ -39,6 +39,7 @@ import com.victor.postly.security.AppUnlockHelper
 import com.victor.postly.security.AppUnlockManager
 import com.victor.postly.utils.Base64Converter
 import com.victor.postly.utils.ShakeDetector
+import com.victor.postly.utils.SoundEffectHelper
 import androidx.exifinterface.media.ExifInterface
 import android.graphics.Matrix
 
@@ -463,6 +464,7 @@ class HomeActivity : AppCompatActivity() {
             post = post,
             userId = uid,
             onSuccess = { updatedPost ->
+                if (updatedPost.likedBy.contains(uid)) SoundEffectHelper.playTap()
                 adapter.updatePost(updatedPost)
             },
             onError = { msg ->
